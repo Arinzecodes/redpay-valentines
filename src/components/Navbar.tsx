@@ -9,19 +9,20 @@ import { RedpayImage } from "@/images";
 import { SALE_ITEMS } from "@/utils"; 
 
 // IMPORT THE MODAL HERE
-// Update this path to wherever you saved the ProductQuickViewModal code you gave me
 import ProductQuickViewModal from "./ProductQuickViewModal"; 
 
 const Navbar = () => {
     const router = useRouter();
     const { cartItems } = useCart();
     
-    // --- STATE ---
+    // --- STATE (FIXED WITH TYPES) ---
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    
+    // FIX: Restored <any[]> to prevent 'never' errors
     const [searchResults, setSearchResults] = useState<any[]>([]); 
     
-    // NEW STATE: Tracks which product is currently being viewed in the modal
+    // FIX: Restored <string | null>
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -61,11 +62,13 @@ const Navbar = () => {
         }
     };
 
+    // FIX: Added ': any' to event
     const handleSearch = (e: any) => {
         const query = e.target.value;
         setSearchQuery(query);
 
         if (query.length > 1 && Array.isArray(SALE_ITEMS)) {
+            // FIX: Added ': any' to item
             const results = SALE_ITEMS.filter((item: any) => 
                 item.cardTitle.toLowerCase().includes(query.toLowerCase())
             );
@@ -75,24 +78,19 @@ const Navbar = () => {
         }
     };
 
-    // --- UPDATED: OPEN MODAL INSTEAD OF ROUTER PUSH ---
     const handleProductClick = (id: string) => {
-        // 1. Clear search to clean up UI
         setSearchQuery("");
         setSearchResults([]);
         setIsSearchOpen(false);
-
-        // 2. Set the selected ID to trigger the modal
         setSelectedProductId(id);
     };
 
-    // --- CLOSE MODAL HANDLER ---
     const handleCloseModal = () => {
         setSelectedProductId(null);
     };
 
-    // Close search if user clicks outside
     useEffect(() => {
+        // FIX: Added ': any' to event
         const handleClickOutside = (event: any) => {
             if (inputRef.current && !inputRef.current.contains(event.target) && !event.target.closest('.search-container')) {
                 if (searchQuery === "") {
@@ -107,10 +105,27 @@ const Navbar = () => {
 
     return (
         <>
+            {/* 1. ANIMATION STYLES */}
+            <style jsx global>{`
+                @keyframes slide-in-stop {
+                    0% {
+                        transform: translateX(10%);
+                        opacity: 0.8;
+                    }
+                    100% {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                .animate-slide-stop {
+                    animation: slide-in-stop 5s ease-out 1 forwards;
+                }
+            `}</style>
+            
             <header className="w-full z-50 sticky top-0">
-                {/* 1. Top Marquee Bar */}
+                {/* 2. Top Marquee Bar */}
                 <div className="w-full h-10 bg-[#F4E1C6] flex items-center justify-center overflow-hidden relative">
-                    <div className="flex gap-8 items-center animate-marquee whitespace-nowrap min-w-full">
+                    <div className="flex gap-8 items-center animate-slide-stop whitespace-nowrap min-w-full justify-center">
                         {[1, 2, 3, 4].map((i) => (
                             <div key={i} className="flex items-center gap-8">
                                 <span className="text-redpay-red font-century text-sm uppercase tracking-wide">
@@ -126,9 +141,10 @@ const Navbar = () => {
                     </div>
                 </div>
 
-                {/* 2. Main Navbar */}
+                {/* 3. Main Navbar */}
                 <nav className="w-full bg-redpay-cream/80 backdrop-blur-md border-b border-redpay-red/10">
-                    <div className="max-w-[1240px] mx-auto px-4 md:px-8 h-[80px] flex items-center justify-between relative">
+                    {/* Layout Fix: xl:px-0 pushes logo to the left */}
+                    <div className="max-w-[1240px] mx-auto px-4 xl:px-0 h-[80px] flex items-center justify-between relative">
                         
                         {/* Left: Logo Area */}
                         <div 
@@ -202,10 +218,10 @@ const Navbar = () => {
                                 {/* Dropdown Results */}
                                 {isSearchOpen && searchResults.length > 0 && (
                                     <div className="absolute top-full right-0 mt-4 w-[300px] bg-white rounded-xl shadow-lg border border-redpay-red/10 overflow-hidden max-h-[300px] overflow-y-auto">
+                                        {/* FIX: Added ': any' to item */}
                                         {searchResults.map((item: any) => (
                                             <div 
                                                 key={item.id}
-                                                // CLICKING HERE NOW OPENS MODAL
                                                 onClick={() => handleProductClick(item.id)}
                                                 className="flex items-center gap-3 p-3 hover:bg-[#FAF5F0] cursor-pointer border-b border-gray-100 last:border-none"
                                             >

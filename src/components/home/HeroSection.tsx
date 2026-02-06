@@ -19,7 +19,7 @@ const HeroSection = () => {
   useEffect(() => {
     const slideInterval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % banners.length);
-    }, 5000);
+    }, 7000);
 
     return () => clearInterval(slideInterval);
   }, []);
@@ -40,7 +40,7 @@ const HeroSection = () => {
           }
         }
         .animate-pan {
-          animation: pan-horizontal 6s linear infinite alternate;
+          animation: pan-horizontal 3s linear infinite alternate;
         }
       `}</style>
 
