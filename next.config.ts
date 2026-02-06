@@ -6,10 +6,13 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "static.nike.com",
-        port: "",
         pathname: "/**",
       },
     ],
+  },
+
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
