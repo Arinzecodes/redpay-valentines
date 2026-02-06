@@ -10,51 +10,56 @@ import AnalyticsProvider from "@/providers/AnalyticsProvider";
 import CookieConsent from "@/components/CookieConsent";
 import AnalyticsLayout from "./layouts/analytics-layout";
 
+// Ensure this variable matches what we put in tailwind.config.ts
 const centuryGothic = localFont({
-	src: [
-		{
-			path: "./fonts/centurygothic.ttf",
-			weight: "400",
-			style: "normal",
-		},
-	],
-	variable: "--font-century-gothic",
-	display: "swap",
+    src: [
+        {
+            path: "./fonts/centurygothic.ttf",
+            weight: "400",
+            style: "normal",
+        },
+    ],
+    variable: "--font-century-gothic", 
+    display: "swap",
 });
 
 export const metadata: Metadata = {
-	title: "Redpay Store",
-	description: "Sales platform",
+    title: "RedPay Valentine's Store",
+    description: "Gift Fast. Eat Together. Look Good.",
 };
 
 export default function RootLayout({
-	children,
+    children,
 }: Readonly<{
-	children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-	return (
-		<html lang="en" className={centuryGothic.variable}>
-			<head>
-				<script
-					async
-					src="https://redpay-sdk-js.s3.eu-west-2.amazonaws.com/omni-payment-gateway-sdk.js"
-				></script>
-			</head>
-			<body className="font-century-gothic antialiased">
-				<ThemeContextProvider>
-					<CartContextProvider>
-						<ToastProvider>
-							<ReactQueryProvider>
-								<AnalyticsProvider>
-									<Navbar />
-									<CookieConsent />
-									<AnalyticsLayout>{children}</AnalyticsLayout>
-								</AnalyticsProvider>
-							</ReactQueryProvider>
-						</ToastProvider>
-					</CartContextProvider>
-				</ThemeContextProvider>
-			</body>
-		</html>
-	);
+    return (
+        <html lang="en" className={centuryGothic.variable} data-theme="valentine">
+            <head>
+                <script
+                    async
+                    src="https://redpay-sdk-js.s3.eu-west-2.amazonaws.com/omni-payment-gateway-sdk.js"
+                ></script>
+            </head>
+            <body className="font-century antialiased bg-redpay-cream text-redpay-dark min-h-screen flex flex-col">
+                <ThemeContextProvider>
+                    <CartContextProvider>
+                        <ToastProvider>
+                            <ReactQueryProvider>
+                                <AnalyticsProvider>
+                                    <Navbar />
+                                    <CookieConsent />
+                                    <AnalyticsLayout>
+                                        <main className="flex-grow">
+                                            {children}
+                                        </main>
+                                    </AnalyticsLayout>
+                                </AnalyticsProvider>
+                            </ReactQueryProvider>
+                        </ToastProvider>
+                    </CartContextProvider>
+                </ThemeContextProvider>
+            </body>
+        </html>
+    );
 }

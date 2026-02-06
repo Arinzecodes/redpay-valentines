@@ -1,114 +1,74 @@
 "use client";
 
-import Image from "next/image";
-import "./globals.css";
-import Card from "@/components/Card";
-import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
-import "./fliptimer.css";
-import { useEffect, useState } from "react";
-import { SALE_ITEMS } from "@/utils";
-import { checkoutFlow } from "@/images";
-import Link from "next/link";
+import React from "react";
+import HeroSection from "@/components/home/HeroSection";
+import ProductSection from "@/components/home/ProductSection";
+import CategoryPills from "@/components/home/CategoryPills";
 
 export default function Home() {
-	const [targetTime, setTargetTime] = useState<number | null>(null);
+  return (
+    <main className="w-full min-h-screen flex flex-col pb-24 bg-redpay-cream overflow-x-hidden">
+      
+      {/* 1. Hero Section (Banner Carousel) */}
+      <section className="relative w-full">
+        <HeroSection />
+      </section>
 
-	useEffect(() => {
-		setTargetTime(new Date("2025-05-01T00:00:00").getTime());
-	}, []);
+      {/* 2. Category Options (Pills) 
+          - Changed from negative margin to positive margin (mt-12) 
+          - This pushes it down away from the banner.
+      */}
+      <div 
+	    id="categories-section"
+		className="flex flex-col items-center z-30 relative px-4 w-full mt-12 mb-12">
+          <CategoryPills />
+      </div>
 
-	const [...otherItems] = SALE_ITEMS;
-	return (
-		<>
-			<main className="overflow-x-hidden flex flex-col items-center justify-center px-4 lg:px-8 py-4">
-				<section className="flex flex-col-reverse lg:flex lg:flex-row lg:h-[88dvh]">
-					<div className="flex flex-col justify-center items-center w-full lg:w-1/2 gap-10">
-						<aside className="text-left flex flex-col gap-8">
-							<div>
-								<h1 className="lg:text-3xl text-xl font-black mt-6 md:mt-0">
-									Welcome to Our Store, Powered by RedPay
-								</h1>
-							</div>
-							<p>
-								Experience seamless shopping with RedPay , a secure, flexible
-								e-commerce payment gateway trusted by businesses worldwide.
-								Accept payments effortlessly, offer your customers more ways to
-								pay, and grow your sales with ease.
-							</p>
-							<Link
-								href={"https://redpay.africa/"}
-								className="text-lg font-bold -mt-3 shadow-md border border-black/20 w-fit px-4 py-2 rounded-lg text-[#ff0303]"
-							>
-								Explore RedPay
-							</Link>
-						</aside>
-					</div>
+      {/* 3. Product Sections 
+          - Added 'pt-16' to the container to push the first category down further 
+          - Increased gap between sections to 'gap-32' to match the spacious Figma layout
+      */}
+      <div className="flex flex-col gap-32 pt-16">
 
-					<aside className="w-full lg:w-1/2 flex flex-col justify-center items-center gap-6">
-						<div className="hidden lg:block">
-							{targetTime && <FlipClockCountdown to={targetTime} />}
-						</div>
 
-						<div className="block lg:hidden">
-							{targetTime && (
-								<FlipClockCountdown
-									to={targetTime}
-									digitBlockStyle={{ width: 30, height: 50, fontSize: 24 }}
-								/>
-							)}
-						</div>
+        
+        {/* ID: gift-fast */}
+        <div id="gift-fast" className="scroll-mt-32">
+            <ProductSection 
+              title="Gift Fast" 
+              subtitle="Flowers, cakes, perfumes, beauty and lifestyle gifts - ready when you are."
+              category="gift-fast"
+            />
+        </div>
+		
 
-						<div className="">
-							<Image
-								alt="main product photo"
-								src={checkoutFlow}
-								height={500}
-								width={500}
-								className="rounded-2xl hidden lg:block animate-zoom"
-							/>
-							<Image
-								src={checkoutFlow}
-								alt="main product photo"
-								height={500}
-								width={500}
-								className="rounded-2xl lg:hidden animate-zoom"
-							/>
-						</div>
-					</aside>
-				</section>
+        {/* ID: eat-together */}
+        <div id="eat-together" className="scroll-mt-32">
+            <ProductSection 
+              title="Eat Together" 
+              subtitle="Dining deals, cafés, and lounges perfect for Valentine moments."
+              category="eat-together"
+            />
+        </div>
 
-				<div className="text-center space-y-2 lg:mt-0 mt-7">
-					<h2 className={`text-2xl font-black`}>Exciting Offers</h2>
-					<p>Do not miss these amazing deals!</p>
-				</div>
+        {/* ID: look-good */}
+        <div id="look-good" className="scroll-mt-32">
+            <ProductSection 
+              title="Look Good" 
+              subtitle="Hair, beauty, skincare, and grooming essentials."
+              category="look-good"
+            />
+        </div>
 
-				<section className="w-full flex flex-col gap-10 lg:items-center justify-center lg:flex-row ">
-					<div className="hidden lg:flex gap-2 justify-evenly w-full mt-10">
-						{otherItems.map((item, index) => (
-							<Card
-								key={index}
-								imageSource={item.imageSource}
-								cardTitle={item.cardTitle}
-								price={item.price}
-								cardId={item.id}
-							/>
-						))}
-					</div>
-
-					<div className="lg:hidden grid grid-cols-2 gap-4 mt-10">
-						{otherItems.map((item, index) => (
-							<div key={index} className="">
-								<Card
-									imageSource={item.imageSource}
-									cardTitle={item.cardTitle}
-									price={item.price}
-									cardId={item.id}
-								/>
-							</div>
-						))}
-					</div>
-				</section>
-			</main>
-		</>
-	);
+        {/* ID: experiences */}
+        <div id="experiences" className="scroll-mt-32">
+            <ProductSection 
+              title="Experiences" 
+              subtitle="Vouchers and experiences that turn moments into memories."
+              category="experiences"
+            />
+        </div>
+      </div>
+    </main>
+  );
 }

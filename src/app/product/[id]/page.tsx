@@ -3,130 +3,133 @@
 import { useRouter } from "next/navigation";
 import { productSizes, SALE_ITEMS, showToast } from "@/utils";
 import { use, useState } from "react";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import CustomButton from "@/components/CustomButton";
 import Image from "next/image";
 import { useCart } from "@/context/CartContextProvider";
 
 interface ProductDetailsParams {
-	params: Promise<{
-		id: string;
-	}>;
+    params: Promise<{
+        id: string;
+    }>;
 }
 
 export default function ProductDetails({ params }: ProductDetailsParams) {
-	const router = useRouter();
-	const [mainPicIndex] = useState(0);
-	const [selectedSize, setSelectedSize] = useState<string | undefined>();
-	const { addToCart } = useCart();
+    const router = useRouter();
+    const [mainPicIndex] = useState(0);
+    const [selectedSize, setSelectedSize] = useState<string | undefined>();
+    const { addToCart } = useCart();
 
-	const { id } = use(params);
+    const { id } = use(params);
+    const item = SALE_ITEMS.find((item) => item.id === id);
 
-	const item = SALE_ITEMS.find((item) => item.id === id);
+    if (!item) {
+        return (
+            <div className="h-screen flex items-center justify-center text-redpay-red font-century text-xl">
+                Item not found!
+            </div>
+        );
+    }
 
-	if (!item) {
-		return <p>Item not found!</p>;
-	}
+    const handleSizeSelect = (size: string) => {
+        setSelectedSize(size);
+    };
 
-	const handleSizeSelect = (size: string) => {
-		setSelectedSize(size);
-	};
+    const proceedToCart = () => {
+        if (selectedSize) {
+            addToCart({
+                id: item.id,
+                name: item.cardTitle,
+                size: selectedSize,
+                price: item.price,
+                image: item.displayPics[0].pic,
+                quantity: 1,
+            });
 
-	const goBack = () => {
-		router.back();
-	};
+            showToast("success", `${item.cardTitle} added to cart`);
+            setTimeout(() => {
+                router.push("/cart");
+            }, 1000);
+        }
+    };
 
-	const proceedToCart = () => {
-		if (selectedSize) {
-			addToCart({
-				id: item.id,
-				name: item.cardTitle,
-				size: selectedSize,
-				price: item.price,
-				image: item.displayPics[0].pic,
-				quantity: 1,
-			});
+    return (
+        <main className="relative min-h-screen bg-redpay-cream pt-24 pb-10 px-4 lg:px-20">
+            {/* Back Icon */}
+            <button 
+                onClick={() => router.back()} 
+                className="absolute top-24 left-4 lg:left-20 z-10 p-2 bg-white/50 rounded-full hover:bg-white transition-all"
+            >
+                <Icon icon="mdi:arrow-left" className="h-8 w-8 text-redpay-dark" />
+            </button>
 
-			showToast("success", `${item.cardTitle} added to cart`);
+            <div className="flex flex-col lg:flex-row gap-12 items-start mt-8">
+                {/* Left: Image */}
+                <section className="w-full lg:w-1/2 flex justify-center bg-white rounded-3xl p-8 shadow-card">
+                    <div className="relative w-full aspect-square max-w-[500px]">
+                        <Image
+                            src={item.displayPics[mainPicIndex].pic}
+                            alt={item.cardTitle}
+                            fill
+                            className="object-contain hover:scale-105 transition-transform duration-500"
+                        />
+                    </div>
+                </section>
 
-			setTimeout(() => {
-				router.push("/cart");
-			}, 1500);
-		}
-	};
+                {/* Right: Details */}
+                <section className="w-full lg:w-1/2 flex flex-col gap-6">
+                    <div>
+                        <h1 className="text-4xl font-century font-bold text-redpay-dark mb-2">
+                            {item.cardTitle}
+                        </h1>
+                        <div className="flex items-center gap-1 text-3xl font-bold text-redpay-red">
+                            <Icon icon="tabler:currency-naira" />
+                            <span>{item.price.toLocaleString()}</span>
+                        </div>
+                    </div>
 
-	return (
-		<main className="relative flex flex-col gap-4 lg:flex-row px-4 lg:px-8 pb-4">
-			<Icon
-				onClick={goBack}
-				icon="mdi:arrow-left"
-				className="h-10 w-10 absolute top-[28rem] left-4 md:top-4 lg:left-8 z-10"
-			/>
+                    <p className="text-redpay-grey text-lg leading-relaxed font-century">
+                        {item.description}
+                    </p>
 
-			<section className="flex w-full lg:w-1/2 ml-10">
-				<div>
-					<Image
-						src={item.displayPics[mainPicIndex].pic}
-						alt="large display image"
-						height={510}
-						width={510}
-					/>
-				</div>
-			</section>
+                    <div className="h-px w-full bg-redpay-red/20 my-2" />
 
-			<section className="flex flex-col w-full items-center m-auto  lg:w-1/2">
-				<div className="text-center">
-					<div className="flex items-center gap-1 justify-center">
-						<h1 className="text-3xl font-extrabold">{item.cardTitle}</h1>(
-						<span className="flex items-center justify-center text-3xl">
-							<Icon icon="tabler:currency-naira" className="" />
-							<span className="text-xl font-bold">{item.price}</span>
-						</span>
-						)
-					</div>
-					<p className="text-md font-medium text-left mt-2">
-						{item.description}
-					</p>
-				</div>
+                    {/* Size Selector */}
+                    <div>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-redpay-dark font-bold font-century">Select Size</h3>
+                            <span className="text-sm text-redpay-blue font-century cursor-pointer hover:underline">Size Guide</span>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            {productSizes.map((sizeObj) => (
+                                <button
+                                    key={sizeObj.size}
+                                    onClick={() => handleSizeSelect(sizeObj.size)}
+                                    className={`w-14 h-14 rounded-full border-2 font-century font-bold transition-all duration-200
+                                        ${selectedSize === sizeObj.size 
+                                            ? "bg-redpay-red border-redpay-red text-white" 
+                                            : "border-gray-300 text-redpay-grey hover:border-redpay-red"
+                                        }`}
+                                >
+                                    {sizeObj.size}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
-				<div className="border-gray-300 border h-0.5 w-full my-6" />
-
-				<div className="">
-					<div className="flex justify-between items-center">
-						<div className="flex items-end mb-4">
-							<h3>Available Sizes</h3>
-							<Icon icon={"mdi:chevron-double-down"} className="h-5 w-5" />
-						</div>
-					</div>
-
-					<ul className="grid grid-cols-5 gap-2 md:gap-4">
-						{productSizes.map((size) => (
-							<CustomButton
-								key={size.size}
-								buttonText={size.size}
-								style={`w-14 text-sm md:w-28 ${
-									selectedSize === size.size
-										? "transition-all ease-in-out bg-gray-500 text-white"
-										: ""
-								}`}
-								buttonTypeTwo
-								onClick={() => handleSizeSelect(size.size)}
-							/>
-						))}
-					</ul>
-				</div>
-
-				<div className="mt-0 lg:mt-10 w-5/6">
-					<CustomButton
-						buttonText="Add to Cart"
-						buttonTypeOne
-						buttonSize="btn-wide"
-						style="text-md font-thin uppercase w-full"
-						onClick={proceedToCart}
-						disabled={!selectedSize}
-					/>
-				</div>
-			</section>
-		</main>
-	);
+                    {/* Action Button */}
+                    <div className="mt-6">
+                        <CustomButton
+                            buttonText={selectedSize ? "Add to Cart" : "Select a Size"}
+                            variant="primary"
+                            buttonSize="btn-lg"
+                            className="w-full uppercase tracking-widest text-lg"
+                            onClick={proceedToCart}
+                            disabled={!selectedSize}
+                        />
+                    </div>
+                </section>
+            </div>
+        </main>
+    );
 }
