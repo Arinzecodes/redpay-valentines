@@ -2,20 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Design System Variables */
+  --background: #FAF5F0; 
+  --foreground: #2E2E2E;
+  --font-century-gothic: "Century Gothic", sans-serif;
+}
+
 *,
 html,
 body {
   scroll-behavior: smooth;
-  transition: all 20ms ease-in-out;
-  overflow: -moz-scrollbars-none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer and Edge */
-  scrollbar-width: none; /* Firefox */
+  transition: background-color 20ms ease-in-out;
 }
 
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-century-gothic);
+  overflow-x: hidden;
+}
+
+/* Custom "Valentine" Scrollbar */
 ::-webkit-scrollbar {
-  display: none !important;
+  width: 10px;
 }
 
+::-webkit-scrollbar-track {
+  background: #FAF5F0; /* Cream track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C80000; /* RedPay Red handle */
+  border-radius: 10px;
+  border: 2px solid #FAF5F0; /* Cream border for breathing room */
+}
+
+/* Utilities to hide inputs/spinners (Kept from your old code) */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   display: none;
