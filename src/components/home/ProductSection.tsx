@@ -16,8 +16,7 @@ const ProductSection = ({ title, subtitle, category }: ProductSectionProps) => {
     // 1. Get items for this category
     const categoryItems = SALE_ITEMS.filter((item) => item.category === category);
 
-    // 2. Ensure we have exactly 8 items by repeating the list if necessary (as requested)
-    // We combine the list with itself to ensure we have enough to fill 8 slots
+    // 2. Ensure we have exactly 8 items by repeating the list if necessary
     const paddedItems = [...categoryItems, ...categoryItems].slice(0, 8);
 
     // 3. Determine how many to show based on state (4 or 8)
@@ -35,13 +34,14 @@ const ProductSection = ({ title, subtitle, category }: ProductSectionProps) => {
                 </p>
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 place-items-center">
+            {/* Grid - FIX APPLIED HERE */}
+            {/* Changed 'grid-cols-1' to 'grid-cols-2' for mobile. */}
+            {/* Changed 'gap-6' to 'gap-3 md:gap-6' for tighter spacing on mobile. */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 place-items-center">
                 {itemsToRender.length > 0 ? (
                     itemsToRender.map((item, index) => (
                         <Card
-                            // Using index in key because we are duplicating items, 
-                            // so IDs might be repeated.
+                            // Using index in key because we are duplicating items
                             key={`${item.id}-${index}`} 
                             cardId={item.id}
                             cardTitle={item.cardTitle}

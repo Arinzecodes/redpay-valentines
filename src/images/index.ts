@@ -22,11 +22,11 @@ import FACE_CAP from "./FACE_CAP.jpg";
 import HAND_FAN from "./HAND_FAN.jpg";
 import KEY_HOLDER from "./KEY_HOLDER.jpg";
 import ONE_SHIRT from "./ONE_SHIRT.jpg";
-import BANNER_ONE from "./redpay-valentinesStore-banner 1.svg";
-import BANNER_TWO from "./redpay-valentinesStore-banner 2.svg";
-import BANNER_THREE from "./redpay-valentinesStore-banner 3.svg";
-import BANNER_FOUR from "./redpay-valentinesStore-banner 4.svg";
-import BANNER_FIVE from "./redpay-valentinesStore-banner 5.svg";
+import BANNER_ONE from "./redpay-valentinesStore-banner 1.png";
+import BANNER_TWO from "./redpay-valentinesStore-banner 2.png";
+import BANNER_THREE from "./redpay-valentinesStore-banner 3.png";
+import BANNER_FOUR from "./redpay-valentinesStore-banner 4.png";
+import BANNER_FIVE from "./redpay-valentinesStore-banner 5.png";
 
 
 export {
