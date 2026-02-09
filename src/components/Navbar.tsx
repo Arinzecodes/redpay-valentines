@@ -15,14 +15,11 @@ const Navbar = () => {
     const router = useRouter();
     const { cartItems } = useCart();
     
-    // --- STATE (FIXED WITH TYPES) ---
+    // --- STATE ---
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     
-    // FIX: Restored <any[]> to prevent 'never' errors
     const [searchResults, setSearchResults] = useState<any[]>([]); 
-    
-    // FIX: Restored <string | null>
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -62,13 +59,11 @@ const Navbar = () => {
         }
     };
 
-    // FIX: Added ': any' to event
     const handleSearch = (e: any) => {
         const query = e.target.value;
         setSearchQuery(query);
 
         if (query.length > 1 && Array.isArray(SALE_ITEMS)) {
-            // FIX: Added ': any' to item
             const results = SALE_ITEMS.filter((item: any) => 
                 item.cardTitle.toLowerCase().includes(query.toLowerCase())
             );
@@ -90,7 +85,6 @@ const Navbar = () => {
     };
 
     useEffect(() => {
-        // FIX: Added ': any' to event
         const handleClickOutside = (event: any) => {
             if (inputRef.current && !inputRef.current.contains(event.target) && !event.target.closest('.search-container')) {
                 if (searchQuery === "") {
@@ -105,35 +99,43 @@ const Navbar = () => {
 
     return (
         <>
-            {/* 1. ANIMATION STYLES */}
+            {/* 1. ANIMATION STYLES: LEFT TO RIGHT */}
             <style jsx global>{`
-                @keyframes slide-in-stop {
+                @keyframes scroll-left-to-right {
                     0% {
-                        transform: translateX(10%);
-                        opacity: 0.8;
+                        transform: translateX(-50%); /* Start hidden on the Left */
                     }
                     100% {
-                        transform: translateX(0);
-                        opacity: 1;
+                        transform: translateX(100vw); /* Move to the Right edge */
                     }
                 }
-                .animate-slide-stop {
-                    animation: slide-in-stop 5s ease-out 1 forwards;
+
+                .animate-scroll-ltr {
+                    /* 20s speed, linear movement, infinite loop */
+                    animation: scroll-left-to-right 30s linear infinite;
+                    display: flex;
+                    width: max-content; /* Important: Allows the block to be wider than screen */
+                }
+                
+                /* Optional: Pause on hover */
+                .animate-scroll-ltr:hover {
+                    animation-play-state: paused;
                 }
             `}</style>
             
             <header className="w-full z-50 sticky top-0">
                 {/* 2. Top Marquee Bar */}
-                <div className="w-full h-10 bg-[#F4E1C6] flex items-center justify-center overflow-hidden relative">
-                    <div className="flex gap-8 items-center animate-slide-stop whitespace-nowrap min-w-full justify-center">
-                        {[1, 2, 3, 4].map((i) => (
+                <div className="w-full h-10 bg-[#F4E1C6] flex items-center overflow-hidden relative">
+                    {/* Applied 'animate-scroll-ltr' here */}
+                    <div className="animate-scroll-ltr flex gap-8 items-center whitespace-nowrap">
+                        {[1, 2, 3, 4, 5].map((i) => (
                             <div key={i} className="flex items-center gap-8">
                                 <span className="text-redpay-red font-century text-sm uppercase tracking-wide">
                                     RedPay Valentine’s Special
                                 </span>
                                 <span className="text-redpay-red">•</span>
-                                <span className="text-redpay-red font-century text-sm">
-                                    Up to 40% discount off on all orders
+                                <span className="text-redpay-red font-century text-sm font-bold">
+                                    ₦10,000 off on all orders above ₦100,000
                                 </span>
                                 <span className="text-redpay-red">•</span>
                             </div>
@@ -143,7 +145,6 @@ const Navbar = () => {
 
                 {/* 3. Main Navbar */}
                 <nav className="w-full bg-redpay-cream/80 backdrop-blur-md border-b border-redpay-red/10">
-                    {/* Layout Fix: xl:px-0 pushes logo to the left */}
                     <div className="max-w-[1240px] mx-auto px-4 xl:px-0 h-[80px] flex items-center justify-between relative">
                         
                         {/* Left: Logo Area */}
@@ -218,7 +219,6 @@ const Navbar = () => {
                                 {/* Dropdown Results */}
                                 {isSearchOpen && searchResults.length > 0 && (
                                     <div className="absolute top-full right-0 mt-4 w-[300px] bg-white rounded-xl shadow-lg border border-redpay-red/10 overflow-hidden max-h-[300px] overflow-y-auto">
-                                        {/* FIX: Added ': any' to item */}
                                         {searchResults.map((item: any) => (
                                             <div 
                                                 key={item.id}
