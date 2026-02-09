@@ -16,79 +16,73 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // const [showModal, setShowModal] = useState(false);
+  const [email, setEmail] = useState("");
+  const [reference, setReference] = useState<string | null>(null);
+  const [phone, setPhone] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
+  const [address, setAddress] = useState<string | null>(null);
 
   // RedPay SDK Logic
-  const handlePayment = async () => {
-    if (!formData.email || !formData.name) {
-      showToast('error', 'Please fill in your details');
+
+  const verifyRedPayPayment = async (ref: string) => {
+    try {
+      console.log("Verifying payment for:", ref);
+      router.push("/");
+      clearCart();
+      // setShowModal(false);
+      showToast("success", "Payment Successful", { autoClose: 3000 });
+    } catch (err: any) {
+      showToast("error", err.message || "Payment verification failed", {
+        autoClose: 3000,
+      });
+    }
+  };
+
+  console.log({ reference });
+
+  const redPayCallback = async (response: any, ref: string) => {
+    if (response.status === "success" || response.status === "completed") {
+      await verifyRedPayPayment(ref);
+      return;
+    }
+  };
+
+  const payWithRedpay = async () => {
+    if (typeof window === "undefined" || !window.RedPayPop) {
+      console.log("RedPay SDK not loaded yet.");
       return;
     }
 
     setLoading(true);
 
-    if (typeof window === 'undefined' || !(window as any).RedPayPop) {
-      showToast('error', 'Payment SDK not loaded');
-      setLoading(false);
-      return;
-    }
-
-    const ref = `RED-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    // Generate reference and store it for later verification
+    const ref = `REF-${Math.ceil(Math.random() * 10e10)}`;
+    setReference(ref);
 
     try {
-      const handler = await (window as any).RedPayPop.setup({
-        key: 'PK_A5B84429D5F3F20EFA9B20250319110107', // Test Key from your code
-        amount: totalAmount * 100, // Amount in kobo
-        email: formData.email,
-        currency: 'NGN',
-        ref: ref,
-        metadata: {
-          custom_fields: [
-            {
-              display_name: 'Customer Name',
-              variable_name: 'customer_name',
-              value: formData.name,
-            },
-            {
-              display_name: 'Phone',
-              variable_name: 'phone',
-              value: formData.phone,
-            },
-            {
-              display_name: 'Address',
-              variable_name: 'address',
-              value: formData.address,
-            },
-          ],
-        },
-        onClose: () => {
+      const handler = await window.RedPayPop.setup({
+        key: "PK_A5B84429D5F3F20EFA9B20250319110107", // Test Key
+        amount: totalAmount * 100, // Amount in kobo,
+        email,
+        currency: "NGN",
+        channels: ["CARD", "USSD", "TRANSFER"],
+        ref,
+        onClose: function () {
+          console.log("Window closed.");
           setLoading(false);
-          console.log('Payment window closed');
         },
-        callback: (response: any) => {
-          console.log('Payment Success:', response);
-          showToast('success', 'Payment Successful!');
-          clearCart();
-          onClose();
-          router.push('/');
+        callback: function (response: any) {
+          redPayCallback(response, ref);
+        },
+        onError: function (error: any) {
+          console.error("RedPay error", error);
         },
       });
 
-      handler.openIframe();
-    } catch (error) {
-      console.error('Payment Init Error:', error);
-      showToast('error', 'Could not initialize payment');
-      setLoading(false);
+      await handler.openIframe();
+    } catch (err: any) {
+      console.error("Error initializing RedPay:", err);
     }
   };
 
@@ -121,8 +115,8 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
             </label>
             <input
               name="name"
-              value={formData.name}
-              onChange={handleChange}
+              value={fullName || ''}
+              onChange={(e) => setFullName(e.target.value)}
               className="w-full h-12 px-6 rounded-full border border-gray-200 focus:border-redpay-red focus:outline-none transition-colors"
               placeholder="Sarah Michael"
             />
@@ -132,11 +126,11 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
               Email Address
             </label>
             <input
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full h-12 px-6 rounded-full border border-gray-200 focus:border-redpay-red focus:outline-none transition-colors"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="name@example.com"
+              className="w-full h-12 px-6 rounded-full border border-gray-200 focus:border-redpay-red focus:outline-none transition-colors"
             />
           </div>
           <div className="space-y-1">
@@ -145,8 +139,8 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
             </label>
             <input
               name="phone"
-              value={formData.phone}
-              onChange={handleChange}
+              value={phone || ''}
+              onChange={(e) => setPhone(e.target.value)}
               className="w-full h-12 px-6 rounded-full border border-gray-200 focus:border-redpay-red focus:outline-none transition-colors"
               placeholder="080 1234 5678"
             />
@@ -157,8 +151,8 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
             </label>
             <input
               name="address"
-              value={formData.address}
-              onChange={handleChange}
+              value={address || ''}
+              onChange={(e) => setAddress(e.target.value)}
               className="w-full h-12 px-6 rounded-full border border-gray-200 focus:border-redpay-red focus:outline-none transition-colors"
               placeholder="123 RedPay Street, Lagos"
             />
@@ -174,7 +168,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
             Cancel
           </button>
           <button
-            onClick={handlePayment}
+            onClick={payWithRedpay}
             disabled={loading}
             className="flex-[2] py-3 rounded-lg bg-redpay-dark text-white font-century font-bold hover:bg-black transition-all flex items-center justify-center gap-2"
           >
