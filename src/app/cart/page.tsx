@@ -125,10 +125,10 @@ export default function CartPage() {
 
                         {/* Disclaimer */}
                         <div className="p-3 bg-redpay-cream rounded-lg mb-6 border border-redpay-orange/20">
-                            <div className="flex items-center gap-2 mb-2 text-redpay-orange">
+                            {/* <div className="flex items-center gap-2 mb-2 text-redpay-orange">
                                 <Icon icon="solar:danger-triangle-linear" />
                                 <span className="font-bold text-xs uppercase">Important Info</span>
-                            </div>
+                            </div> */}
                             <p className="text-xs text-redpay-grey leading-relaxed">
                                 By completing this purchase, you acknowledge and agree that your order fulfillment and  delivery will be managed entirely by the merchant. RedPay Store serves as a marketplace  platform connecting buyers and sellers. Delivery timelines, methods, and arrangements  are the sole responsibility of the merchant as specified in the product listing.
                             </p>
