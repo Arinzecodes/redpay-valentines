@@ -7,10 +7,12 @@ import CustomButton from "@/components/CustomButton";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CheckoutModal from "@/components/CheckoutModal";
+import { useQuery } from "@tanstack/react-query";
+import { getCart } from "@/actions/getCart";
 
 export default function CartPage() {
     const {
-        cartItems,
+        // cartItems,
         removeFromCart,
         updateQuantity,
         calculateTotal,
@@ -45,12 +47,14 @@ export default function CartPage() {
 
     const goToShop = () => router.push("/");
 
+    console.log(GetCartProducts);
+
     return (
         <div className="min-h-screen bg-redpay-cream pt-10 pb-20 px-4 md:px-12 relative">
             <h1 className="text-4xl font-bold font-century text-redpay-red text-center mb-2">Your Cart</h1>
             <p className="text-center text-redpay-grey font-century mb-12">Review your items before checkout.</p>
 
-            {cartItems.length === 0 ? (
+            {GetCartProducts?.data?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
                     <div className="relative">
                         <Icon icon="solar:cart-large-2-linear" className="w-24 h-24 text-redpay-red/50" />
@@ -66,22 +70,22 @@ export default function CartPage() {
                 <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Left: Items */}
                     <div className="lg:col-span-2 flex flex-col gap-6">
-                        {cartItems.map((item) => (
-                            <div key={`${item.id}-${item.size}`} className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10">
+                        {GetCartProducts?.data?.map((item: any) => (
+                            <div key={`${item?.id}-${item?.size}`} className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10">
                                 <div className="relative h-24 w-24 bg-gray-50 rounded-lg overflow-hidden shrink-0">
-                                    <Image src={item.image} alt={item.name} fill className="object-cover" />
+                                    <Image src={item?.image} alt={item?.name} fill className="object-cover" />
                                 </div>
                                 <div className="flex-grow flex flex-col justify-between">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="font-bold text-redpay-dark text-lg">{item.name}</h3>
-                                            <p className="text-sm text-redpay-grey">Size: {item.size}</p>
+                                            <h3 className="font-bold text-redpay-dark text-lg">{item?.name}</h3>
+                                            <p className="text-sm text-redpay-grey">Size: {item?.size}</p>
                                             <div className="flex items-center gap-1 mt-1">
                                                 <Icon icon="solar:danger-circle-linear" className="text-redpay-orange w-4 h-4" />
                                                 <span className="text-xs text-redpay-orange font-century">Low stock</span>
                                             </div>
                                         </div>
-                                        <p className="font-bold text-redpay-red text-xl">₦{item.price.toLocaleString()}</p>
+                                        <p className="font-bold text-redpay-red text-xl">₦{item?.price.toLocaleString()}</p>
                                     </div>
 
                                     <div className="flex justify-between items-center mt-2">

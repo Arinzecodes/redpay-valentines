@@ -19,7 +19,7 @@ interface CardProps {
 }
 
 const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: CardProps) => {
-    const { addToCart } = useCart();
+    // const { addToCart } = useCart();
     const [showQuickView, setShowQuickView] = useState(false);
 
     // Old Price logic
@@ -57,7 +57,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
     return (
         <>
             <div className="group relative bg-white w-full md:max-w-[295px] h-auto md:h-[420px] rounded-xl shadow-card hover:shadow-xl transition-all duration-300 flex flex-col">
-                
+
                 {/* 1. Image Section */}
                 <div
                     onClick={handleViewDetails}
@@ -144,7 +144,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
             {/* Modal */}
             {showQuickView && (
                 <ProductQuickViewModal
-                    itemData={itemData} 
+                    itemData={itemData}
                     onClose={() => setShowQuickView(false)}
                 />
             )}

@@ -26,32 +26,32 @@ export default async function Home() {
 
       {/* 3. PRODUCT SECTIONS: Live Backend Data */}
       <div className="flex flex-col gap-20 py-16">
-        <ProductSection 
-          title="Gift Fast" 
-          subtitle="Curated gifts ready to go" 
-          category="gift-fast" 
-          products={products} 
+        <ProductSection
+          title="Gift Fast"
+          subtitle="Curated gifts ready to go"
+          category="gift-fast"
+          products={products}
         />
-        
-        <ProductSection 
-          title="Eat Together" 
-          subtitle="Share a meal, share the love" 
-          category="eat-together" 
-          products={products} 
+
+        <ProductSection
+          title="Eat Together"
+          subtitle="Share a meal, share the love"
+          category="eat-together"
+          products={products}
         />
-        
-        <ProductSection 
-          title="Look Good" 
-          subtitle="Style that speaks volumes" 
-          category="look-good" 
-          products={products} 
+
+        <ProductSection
+          title="Look Good"
+          subtitle="Style that speaks volumes"
+          category="look-good"
+          products={products}
         />
-        
-        <ProductSection 
-          title="Experiences" 
-          subtitle="Create memories that last" 
-          category="experiences" 
-          products={products} 
+
+        <ProductSection
+          title="Experiences"
+          subtitle="Create memories that last"
+          category="experiences"
+          products={products}
         />
       </div>
     </main>
