@@ -7,7 +7,7 @@ import Image, { StaticImageData } from "next/image";
 import ProductQuickViewModal from "./ProductQuickViewModal";
 import { useMutation } from "@tanstack/react-query";
 import { addCart } from "@/actions/addCart";
-import { useCart } from "@/context/CartContextProvider";
+// import { useCart } from "@/context/CartContextProvider";
 
 interface CardProps {
     imageSource: StaticImageData | string;
@@ -19,7 +19,7 @@ interface CardProps {
 }
 
 const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: CardProps) => {
-    const { addToCart } = useCart();
+    // const { addToCart } = useCart();
     const [showQuickView, setShowQuickView] = useState(false);
 
     // Old Price logic (API returns null for now, but kept for UI compatibility)

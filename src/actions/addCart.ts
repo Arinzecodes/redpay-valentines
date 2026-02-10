@@ -5,11 +5,9 @@ interface AddCartProps {
 
 export async function addCart(values: AddCartProps) {
 	try {
-		const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
-		if (!BASE_URL) {
-			throw new Error("API base URL is not defined");
-		}
+		const BASE_URL =
+			process.env.NEXT_PUBLIC_BASE_URL ||
+			"https://redpaystore.staging.redpay.africa";
 
 		const endpoint = `${BASE_URL}/api/product/cart/add`;
 
