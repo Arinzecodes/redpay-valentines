@@ -127,7 +127,8 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                                         price: itemData.price,
                                         image: itemData.displayPics[0].pic,
                                         quantity: 1,
-                                        size: "Regular"
+                                        size: "Regular",
+                                        deliveryFee: itemData.deliveryFee
                                     });
                                 }
                             }}

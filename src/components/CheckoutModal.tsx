@@ -9,6 +9,7 @@ import { useMutation } from '@tanstack/react-query';
 import { createOrder } from '@/actions/createOrder';
 import * as Yup from 'yup'
 import { Form, Formik } from 'formik';
+import { notifyOrder } from '@/actions/notifyOrder';
 
 interface CheckoutModalProps {
   totalAmount: number;
@@ -29,6 +30,23 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
 
   const [reference, setReference] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+
+  const { mutate: NotifyPaymentMutation } = useMutation({
+    mutationFn: notifyOrder,
+    onSuccess: (data) => {
+      showToast(data.status ? "success" : "error", data.message)
+    },
+    onError: (error) => {
+      showToast("error", error.message || "Failed to create order", { autoClose: 3000 });
+    }
+  })
+
+  const handleNotifyPayment = () => {
+    NotifyPaymentMutation({
+      orderReference: reference,
+      totalAmountPaid: totalAmount
+    })
+  }
 
 
   const { mutate: CreateOrderMutation, isPending, data: orderData } = useMutation({
@@ -79,6 +97,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   const redPayCallback = async (response: any, ref: string) => {
     if (response.status === "success" || response.status === "completed") {
       await verifyRedPayPayment(ref);
+      handleNotifyPayment()
       return;
     }
   };
@@ -104,6 +123,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
 
         callback(response: any) {
           redPayCallback(response, ref);
+
         },
 
         onError(error: any) {
@@ -150,7 +170,10 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
             shippingAddress: "",
             productIds: productIds
           }}
-          onSubmit={handleCreateOrder}
+          onSubmit={(values) => {
+            handleCreateOrder(values)
+
+          }}
           validationSchema={FormSchema}
           validateOnChange
           validateOnBlur

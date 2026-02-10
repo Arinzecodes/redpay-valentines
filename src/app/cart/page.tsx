@@ -308,7 +308,6 @@ export default function CartPage() {
   const total = calculateTotal();
   const grandTotal = total;
 
-  const grandTotalWithCoupon = grandTotal - coupon;
 
   useEffect(() => {
     if (grandTotal < 100000) {
@@ -318,12 +317,10 @@ export default function CartPage() {
     }
   }, [grandTotal])
 
-  // const { data } = useQuery({
-  //   queryKey: ['getCarts'],
-  //   queryFn: getCart
-  // })
+  const totalDeliveryFee = cartItems.reduce((acc, item) => acc + (Number(item.deliveryFee) || 0), 0);
 
-  console.log(cartItems);
+  const grandTotalWithCoupon = grandTotal + totalDeliveryFee - coupon;
+  // console.log(totalDeliveryFee);
 
 
   const goToShop = () => router.push("/");
@@ -414,10 +411,10 @@ export default function CartPage() {
                 <span>Subtotal</span>
                 <span className="font-bold text-redpay-dark">₦{total.toLocaleString()}</span>
               </div>
-              {/* <div className="flex justify-between">
-                <span>Delivery</span>
-                <span className="font-bold text-redpay-dark">₦{deliveryFee.toLocaleString()}</span>
-              </div> */}
+              <div className="flex justify-between">
+                <span>Delivery Fee</span>
+                <span className="font-bold text-redpay-dark">₦{totalDeliveryFee.toLocaleString()}</span>
+              </div>
               <div className="flex justify-between">
                 <span>Discount</span>
                 <span className="font-bold text-redpay-dark">(-₦{coupon.toLocaleString()})</span>
@@ -468,7 +465,7 @@ export default function CartPage() {
       {/* Modal Injection */}
       {showModal && (
         <CheckoutModal
-          totalAmount={grandTotal}
+          totalAmount={grandTotalWithCoupon}
           onClose={() => setShowModal(false)}
         />
       )}
