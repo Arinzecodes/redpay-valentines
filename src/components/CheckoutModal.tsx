@@ -15,7 +15,6 @@ interface CheckoutModalProps {
   onClose: () => void;
 }
 
-
 const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   const FormSchema = Yup.object().shape({
     customerName: Yup.string().required("Full Name is required"),
@@ -37,12 +36,8 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     onSuccess: (data) => {
       showToast(data.status ? "success" : "error", data.message)
       const ref = orderData?.data.reference
-
       setReference(ref);
-      // showToast("success", "Order created. Proceeding to payment");
-
       payWithRedpay(ref);
-
     },
     onError: (error) => {
       showToast("error", error.message || "Failed to create order", { autoClose: 3000 });
@@ -64,9 +59,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     });
   };
 
-
   // RedPay SDK Logic
-
   const verifyRedPayPayment = async (ref: string) => {
     try {
       console.log("Verifying payment for:", ref);

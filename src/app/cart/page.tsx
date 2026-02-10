@@ -419,7 +419,7 @@ export default function CartPage() {
                 <span className="font-bold text-redpay-dark">₦{deliveryFee.toLocaleString()}</span>
               </div> */}
               <div className="flex justify-between">
-                <span>Coupon</span>
+                <span>Discount</span>
                 <span className="font-bold text-redpay-dark">(-₦{coupon.toLocaleString()})</span>
               </div>
               <div className="flex justify-between text-redpay-red font-bold text-xl pt-4 border-t">
