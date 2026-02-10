@@ -1,44 +1,50 @@
+"use server";
+
 interface AddCartProps {
-	productId: string;
-	quantity: number;
+    productId: string;
+    quantity: number;
 }
 
 export async function addCart(values: AddCartProps) {
-	try {
-		const BASE_URL =
-			process.env.NEXT_PUBLIC_BASE_URL ||
-			"https://redpaystore.staging.redpay.africa";
+    try {
+        // FIX: Use the correct environment variable name we set up earlier
+        const BASE_URL = process.env.NEXT_PUBLIC_REDPAY_STORE_BASE_URL || "https://redpaystore.staging.redpay.africa";
 
-		const endpoint = `${BASE_URL}/api/product/cart/add`;
+        if (!BASE_URL) {
+            throw new Error("API base URL is not defined");
+        }
 
-		const response = await fetch(endpoint, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(values),
-		});
+        const endpoint = `${BASE_URL}/api/product/cart/add`;
 
-		const data = await response.json();
-		if (!response.ok) {
-			return {
-				status: false,
-				message: data.message,
-				data: data.data || null,
-			};
-		}
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        });
 
-		return {
-			status: true,
-			message: data.message,
-			data: data.data || null,
-		};
-	} catch (error) {
-		console.error(error);
-		return {
-			status: false,
-			message: "Unexpected error occurred",
-			data: null,
-		};
-	}
+        const data = await response.json();
+        
+        if (!response.ok) {
+            return {
+                status: false,
+                message: data.message || "Failed to add to cart",
+                data: data.data || null,
+            };
+        }
+
+        return {
+            status: true,
+            message: data.message || "Added to cart successfully",
+            data: data.data || null,
+        };
+    } catch (error) {
+        console.error("Add to Cart Error:", error);
+        return {
+            status: false,
+            message: "Unexpected error occurred",
+            data: null,
+        };
+    }
 }

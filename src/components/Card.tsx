@@ -6,8 +6,8 @@ import { Icon } from "@iconify/react";
 import Image, { StaticImageData } from "next/image";
 import ProductQuickViewModal from "./ProductQuickViewModal";
 import { useMutation } from "@tanstack/react-query";
-import { addCart } from "@/actions/addCart";
-// import { useCart } from "@/context/CartContextProvider";
+import { addCart } from "@/actions/addCart"; // Importing the Server Action
+import { useCart } from "@/context/CartContextProvider";
 
 interface CardProps {
     imageSource: StaticImageData | string;
@@ -31,6 +31,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
         discountPercentage = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
     }
 
+    // Server Action Mutation
     const { mutate: AddToCartMutation } = useMutation({
         mutationFn: addCart,
         onSuccess: (data) => {
@@ -42,6 +43,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
     });
 
     const handleQuickAdd = () => {
+        // 1. Call Backend
         AddToCartMutation({
             productId: cardId, 
             quantity: 1
@@ -81,7 +83,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                             {cardTitle}
                         </h3>
 
-                        {/* 👇 UPDATED: Showing items left if stock is less than 100 (so you can see it working) */}
+                        {/* Items Left Warning (Visible if stock < 100) */}
                         {stock < 100 && stock > 0 && (
                             <div className="flex items-center gap-1 mt-1">
                                 <Icon icon="solar:danger-circle-bold" className="text-[#D98B06] w-3 h-3 md:w-4 md:h-4" />
@@ -119,6 +121,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleQuickAdd();
+                                // 2. Optimistic UI Update (Context)
                                 if (itemData) {
                                      addToCart({
                                         id: itemData.id,
