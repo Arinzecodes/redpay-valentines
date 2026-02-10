@@ -19,7 +19,6 @@ interface CardProps {
 }
 
 const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) => {
-    const { addToCart } = useCart();
     const [showQuickView, setShowQuickView] = useState(false);
 
     // Find item details
@@ -144,22 +143,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) 
                         </button>
 
                         <button
-                            onClick={() => {
-                                handleQuickAdd()
-                                if (item) {
-                                    addToCart({
-                                        id: item.id,
-                                        name: item.cardTitle,
-                                        price: item.price,
-                                        image: typeof item.displayPics[0].pic === 'string'
-                                            ? item.displayPics[0].pic
-                                            : (item.displayPics[0].pic as StaticImageData).src,
-                                        quantity: 1,
-                                        size: "Regular"
-                                    });
-                                    showToast("success", "Added to Cart!");
-                                }
-                            }}
+                            onClick={handleQuickAdd}
                             // FIX: Smaller circle button on mobile
                             className="w-8 h-8 md:w-11 md:h-11 rounded-full bg-[#FDEDF3] border border-[#C80000] flex items-center justify-center text-[#C80000] hover:bg-[#C80000] hover:text-white transition-colors shrink-0"
                         >
