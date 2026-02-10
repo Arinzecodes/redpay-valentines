@@ -15,14 +15,14 @@ interface CardProps {
     price: number | string;
     cardId: string;
     stock?: number;
-    itemData: any; // NEW PROP: Receive full data to pass to modal
+    itemData: any; 
 }
 
 const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: CardProps) => {
     const { addToCart } = useCart();
     const [showQuickView, setShowQuickView] = useState(false);
 
-    // Old Price logic (API returns null for now, but kept for UI compatibility)
+    // Old Price logic
     const oldPrice = itemData?.oldPrice;
     const currentPrice = typeof price === 'number' ? price : Number(price);
 
@@ -43,7 +43,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
 
     const handleQuickAdd = () => {
         AddToCartMutation({
-            productId: cardId, // Use the dynamic cardId
+            productId: cardId, 
             quantity: 1
         });
     };
@@ -81,7 +81,8 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                             {cardTitle}
                         </h3>
 
-                        {stock < 5 && (
+                        {/* 👇 UPDATED: Showing items left if stock is less than 100 (so you can see it working) */}
+                        {stock < 100 && stock > 0 && (
                             <div className="flex items-center gap-1 mt-1">
                                 <Icon icon="solar:danger-circle-bold" className="text-[#D98B06] w-3 h-3 md:w-4 md:h-4" />
                                 <span className="text-[10px] md:text-xs text-[#D98B06] font-century">
@@ -118,7 +119,6 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleQuickAdd();
-                                // Optional: Keep Context update for immediate UI feedback if desired
                                 if (itemData) {
                                      addToCart({
                                         id: itemData.id,
@@ -138,7 +138,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                 </div>
             </div>
 
-            {/* Modal - Passing full item data directly */}
+            {/* Modal */}
             {showQuickView && (
                 <ProductQuickViewModal
                     itemData={itemData} 
