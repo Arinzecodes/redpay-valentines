@@ -10,7 +10,7 @@ import AnalyticsProvider from "@/providers/AnalyticsProvider";
 import CookieConsent from "@/components/CookieConsent";
 import AnalyticsLayout from "./layouts/analytics-layout";
 // FIX: Import the new button
-import ScrollToTopButton from "@/components/ScrollToTopButton"; 
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 // Ensure this variable matches what we put in tailwind.config.ts
 const centuryGothic = localFont({
@@ -21,7 +21,7 @@ const centuryGothic = localFont({
             style: "normal",
         },
     ],
-    variable: "--font-century-gothic", 
+    variable: "--font-century-gothic",
     display: "swap",
 });
 
@@ -56,10 +56,10 @@ export default function RootLayout({
                                             {children}
                                         </main>
                                     </AnalyticsLayout>
-                                    
+
                                     {/* FIX: Add the Scroll Button here */}
                                     <ScrollToTopButton />
-                                    
+
                                 </AnalyticsProvider>
                             </ReactQueryProvider>
                         </ToastProvider>

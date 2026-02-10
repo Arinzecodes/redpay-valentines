@@ -4,8 +4,18 @@ import React from "react";
 import HeroSection from "@/components/home/HeroSection";
 import ProductSection from "@/components/home/ProductSection";
 import CategoryPills from "@/components/home/CategoryPills";
+import { useQuery } from "@tanstack/react-query";
+import { getProducts } from "@/actions/getProducts";
 
 export default function Home() {
+
+  const { data } = useQuery({
+    queryKey: ['products'],
+    queryFn: getProducts
+  })
+
+  console.log(data);
+
 
   return (
     <main className="w-full min-h-screen flex flex-col pb-24 bg-redpay-cream overflow-x-hidden">
