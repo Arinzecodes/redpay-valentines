@@ -1,12 +1,9 @@
-interface CreateOrderProps {
-	customerName: string;
-	customerEmail: string;
-	shippingAddress: string;
-	customerPhoneNumber: string;
-	// paymentMethod: string
+interface AddCartProps {
+	productId: string;
+	quantity: number;
 }
 
-export async function createOrder(values: CreateOrderProps) {
+export async function addToCart(values: AddCartProps) {
 	try {
 		const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -14,7 +11,7 @@ export async function createOrder(values: CreateOrderProps) {
 			throw new Error("API base URL is not defined");
 		}
 
-		const endpoint = `${BASE_URL}/api/product/order`;
+		const endpoint = `${BASE_URL}/api/product/cart/add`;
 
 		const response = await fetch(endpoint, {
 			method: "POST",
