@@ -27,14 +27,11 @@ const ProductSection = ({ title, subtitle, category, products }: ProductSectionP
     // 1. Get items for this category (Using the passed props)
     const categoryItems = products.filter((item) => item.category === category);
 
-    // 2. Ensure we have exactly 8 items (UI Logic preserved)
-    // Only duplicate if we have items, otherwise empty array
-    const paddedItems = categoryItems.length > 0
-        ? [...categoryItems, ...categoryItems].slice(0, 8)
-        : [];
+    // 2. Logic updated: Duplication removed.
+    // We now use categoryItems directly instead of creating 'paddedItems'.
 
     // 3. Determine how many to show
-    const itemsToRender = showAll ? paddedItems : paddedItems.slice(0, 4);
+    const itemsToRender = showAll ? categoryItems : categoryItems.slice(0, 4);
 
     console.log(itemsToRender);
 
@@ -56,8 +53,8 @@ const ProductSection = ({ title, subtitle, category, products }: ProductSectionP
                 {itemsToRender.length > 0 ? (
                     itemsToRender.map((item, index) => (
                         <Card
-                            // Using composite key because of duplication logic
-                            key={`${item.id}-${index}`}
+                            // Key format preserved
+                            key={`${item.id}-${index}`} 
                             cardId={item.id}
                             cardTitle={item.cardTitle}
                             price={item.price}
