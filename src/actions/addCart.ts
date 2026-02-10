@@ -3,7 +3,7 @@ interface AddCartProps {
 	quantity: number;
 }
 
-export async function addToCart(values: AddCartProps) {
+export async function addCart(values: AddCartProps) {
 	try {
 		const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 

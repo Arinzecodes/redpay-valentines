@@ -6,7 +6,8 @@ import { Icon } from "@iconify/react";
 // import { useCart } from "@/context/CartContextProvider";
 import { SALE_ITEMS, showToast } from "@/utils";
 import { useMutation } from "@tanstack/react-query";
-import { addToCart } from "@/actions/addToCart";
+import { useCart } from "@/context/CartContextProvider";
+import { addCart } from "@/actions/addCart";
 
 interface ProductQuickViewProps {
     cardId: string;
@@ -14,12 +15,12 @@ interface ProductQuickViewProps {
 }
 
 const ProductQuickViewModal = ({ cardId, onClose }: ProductQuickViewProps) => {
-    //   const { addToCart } = useCart();
+    const { addToCart } = useCart();
     const item = SALE_ITEMS.find((i) => i.id === cardId);
     const [quantity, setQuantity] = useState(1);
 
     const { mutate: AddToCartMutation } = useMutation({
-        mutationFn: addToCart,
+        mutationFn: addCart,
         onSuccess: (data) => {
             showToast(data.status ? "success" : "error", data.status ? "Added to Cart!" : "Failed to add to cart");
             onClose();
