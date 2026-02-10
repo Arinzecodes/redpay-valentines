@@ -18,23 +18,30 @@ export default function CartPage() {
 
     const router = useRouter();
     const [showModal, setShowModal] = useState(false);
-    const [isTermsAccepted, setIsTermsAccepted] = useState(false); // The Gatekeeper
-    const [coupon, setCoupon] = useState<number>(10000)
+    const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+    
+    // Default to 0 initially, useEffect will update it immediately
+    const [coupon, setCoupon] = useState<number>(0);
 
     const total = calculateTotal();
-    // const deliveryFee = 1500;
-    // const grandTotal = total + deliveryFee;
 
-    const grandTotalWithCoupon = total + coupon;
-
-
+    // 1. UPDATE: New Coupon Logic
     useEffect(() => {
-        if (total < 100000) {
-            setCoupon(1500)
+        if (total < 20000) {
+            // Orders below 20k get 3k off
+            setCoupon(3000);
+        } else if (total <= 100000) {
+            // Orders 20k - 100k get 5k off
+            setCoupon(5000);
         } else {
-            setCoupon(10000)
+            // Orders above 100k get 10k off
+            setCoupon(10000);
         }
-    }, [total])
+    }, [total]);
+
+    // 2. UPDATE: Math changed from (+) to (-)
+    // We use Math.max(0, ...) to ensure the total never goes below zero
+    const grandTotalWithCoupon = Math.max(0, total - coupon);
 
     const goToShop = () => router.push("/");
 
@@ -124,13 +131,11 @@ export default function CartPage() {
                                 <span>Subtotal</span>
                                 <span className="font-bold text-redpay-dark">₦{total.toLocaleString()}</span>
                             </div>
-                            {/* <div className="flex justify-between">
-                                <span>Delivery</span>
-                                <span className="font-bold text-redpay-dark">₦{deliveryFee.toLocaleString()}</span>
-                            </div> */}
+                            
                             <div className="flex justify-between">
-                                <span>Coupon</span>
-                                <span className="font-bold text-redpay-dark">(₦{coupon.toLocaleString()})</span>
+                                <span>Discount</span>
+                                {/* Added minus sign to visualize deduction */}
+                                <span className="font-bold text-redpay-red">- ₦{coupon.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between text-redpay-red font-bold text-xl pt-4 border-t">
                                 <span>Total</span>
@@ -140,12 +145,8 @@ export default function CartPage() {
 
                         {/* Disclaimer */}
                         <div className="p-3 bg-redpay-cream rounded-lg mb-6 border border-redpay-orange/20">
-                            {/* <div className="flex items-center gap-2 mb-2 text-redpay-orange">
-                                <Icon icon="solar:danger-triangle-linear" />
-                                <span className="font-bold text-xs uppercase">Important Info</span>
-                            </div> */}
                             <p className="text-xs text-redpay-grey leading-relaxed">
-                                By completing this purchase, you acknowledge and agree that your order fulfillment and  delivery will be managed entirely by the merchant. RedPay Store serves as a marketplace  platform connecting buyers and sellers. Delivery timelines, methods, and arrangements  are the sole responsibility of the merchant as specified in the product listing.
+                                By completing this purchase, you acknowledge and agree that your order fulfillment and delivery will be managed entirely by the merchant. RedPay Store serves as a marketplace platform connecting buyers and sellers. Delivery timelines, methods, and arrangements are the sole responsibility of the merchant as specified in the product listing.
                             </p>
                         </div>
 
@@ -178,7 +179,8 @@ export default function CartPage() {
             {/* Modal Injection */}
             {showModal && (
                 <CheckoutModal
-                    totalAmount={total}
+                    // 3. UPDATE: Pass the discounted total to the checkout modal
+                    totalAmount={grandTotalWithCoupon}
                     onClose={() => setShowModal(false)}
                 />
             )}
