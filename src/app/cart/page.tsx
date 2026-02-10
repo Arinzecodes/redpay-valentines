@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 import CustomButton from "@/components/CustomButton";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CheckoutModal from "@/components/CheckoutModal";
 
 export default function CartPage() {
@@ -13,17 +13,28 @@ export default function CartPage() {
         cartItems,
         removeFromCart,
         updateQuantity,
-        clearCart,
         calculateTotal,
     } = useCart();
-    
+
     const router = useRouter();
     const [showModal, setShowModal] = useState(false);
     const [isTermsAccepted, setIsTermsAccepted] = useState(false); // The Gatekeeper
+    const [coupon, setCoupon] = useState<number>(10000)
 
     const total = calculateTotal();
-    const deliveryFee = 1500; // Example fixed fee, can be dynamic
-    const grandTotal = total + deliveryFee;
+    // const deliveryFee = 1500;
+    // const grandTotal = total + deliveryFee;
+
+    const grandTotalWithCoupon = total + coupon;
+
+
+    useEffect(() => {
+        if (total < 100000) {
+            setCoupon(1500)
+        } else {
+            setCoupon(10000)
+        }
+    }, [total])
 
     const goToShop = () => router.push("/");
 
@@ -65,23 +76,23 @@ export default function CartPage() {
                                         </div>
                                         <p className="font-bold text-redpay-red text-xl">₦{item.price.toLocaleString()}</p>
                                     </div>
-                                    
+
                                     <div className="flex justify-between items-center mt-2">
                                         {/* Quantity Control */}
                                         <div className="flex items-center border border-gray-300 rounded-lg">
-                                            <button 
+                                            <button
                                                 onClick={() => updateQuantity(item.id, item.size ?? "", Math.max(1, item.quantity - 1))}
                                                 className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                                             >-</button>
                                             <span className="px-3 font-bold text-sm">{item.quantity}</span>
-                                            <button 
+                                            <button
                                                 onClick={() => updateQuantity(item.id, item.size ?? "", item.quantity + 1)}
                                                 className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                                             >+</button>
                                         </div>
-                                        
+
                                         {/* Delete */}
-                                        <button 
+                                        <button
                                             onClick={() => removeFromCart(item.id, item.size ?? "")}
                                             className="text-redpay-grey hover:text-redpay-red flex items-center gap-1 text-sm transition-colors"
                                         >
@@ -94,10 +105,10 @@ export default function CartPage() {
 
                         {/* Coupon Section */}
                         <div className="flex items-center mt-4">
-                            <input 
-                                type="text" 
-                                placeholder="Coupon Code" 
-                                className="h-12 pl-6 pr-4 rounded-l-full border border-r-0 border-gray-300 bg-white focus:outline-none w-full md:w-64" 
+                            <input
+                                type="text"
+                                placeholder="Coupon Code"
+                                className="h-12 pl-6 pr-4 rounded-l-full border border-r-0 border-gray-300 bg-white focus:outline-none w-full md:w-64"
                             />
                             <button className="h-12 px-8 bg-redpay-red text-white font-bold rounded-r-full hover:bg-red-800 transition-colors">
                                 Apply
@@ -113,13 +124,17 @@ export default function CartPage() {
                                 <span>Subtotal</span>
                                 <span className="font-bold text-redpay-dark">₦{total.toLocaleString()}</span>
                             </div>
-                            <div className="flex justify-between">
+                            {/* <div className="flex justify-between">
                                 <span>Delivery</span>
                                 <span className="font-bold text-redpay-dark">₦{deliveryFee.toLocaleString()}</span>
+                            </div> */}
+                            <div className="flex justify-between">
+                                <span>Coupon</span>
+                                <span className="font-bold text-redpay-dark">(₦{coupon.toLocaleString()})</span>
                             </div>
                             <div className="flex justify-between text-redpay-red font-bold text-xl pt-4 border-t">
                                 <span>Total</span>
-                                <span>₦{grandTotal.toLocaleString()}</span>
+                                <span>₦{grandTotalWithCoupon.toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -135,7 +150,7 @@ export default function CartPage() {
                         </div>
 
                         {/* Gatekeeper Checkbox */}
-                        <div 
+                        <div
                             className="flex items-center gap-3 mb-6 cursor-pointer group"
                             onClick={() => setIsTermsAccepted(!isTermsAccepted)}
                         >
@@ -149,11 +164,10 @@ export default function CartPage() {
                         <button
                             onClick={() => setShowModal(true)}
                             disabled={!isTermsAccepted}
-                            className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${
-                                isTermsAccepted 
-                                    ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20" 
-                                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                            }`}
+                            className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${isTermsAccepted
+                                ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
+                                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                }`}
                         >
                             Proceed to Checkout
                         </button>
@@ -163,9 +177,9 @@ export default function CartPage() {
 
             {/* Modal Injection */}
             {showModal && (
-                <CheckoutModal 
-                    totalAmount={grandTotal} 
-                    onClose={() => setShowModal(false)} 
+                <CheckoutModal
+                    totalAmount={total}
+                    onClose={() => setShowModal(false)}
                 />
             )}
         </div>
