@@ -18,6 +18,9 @@ interface CartContextProps {
     updateQuantity: (id: string, size: string, quantity: number) => void;
     clearCart: () => void;
     calculateTotal: () => number;
+
+    // ADDED: allow external hydration (API → context)
+  setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }
 
 const CartContext = createContext<CartContextProps | undefined>(undefined);
@@ -78,7 +81,7 @@ export const CartContextProvider = ({ children }: { children: React.ReactNode })
     };
 
     return (
-        <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, calculateTotal }}>
+        <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, calculateTotal, setCartItems }}>
             {children}
         </CartContext.Provider>
     );
