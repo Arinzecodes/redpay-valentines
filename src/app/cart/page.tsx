@@ -6,8 +6,8 @@ import { Icon } from "@iconify/react";
 import CustomButton from "@/components/CustomButton";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import CheckoutModal from "@/components/CheckoutModal";
-
+import CheckoutModal from "@/components/CheckoutModal"; 
+// 1. UPDATE: 
 export default function CartPage() {
     const {
         cartItems,
