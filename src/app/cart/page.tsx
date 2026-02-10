@@ -7,6 +7,8 @@ import CustomButton from "@/components/CustomButton";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CheckoutModal from "@/components/CheckoutModal";
+import { useQuery } from "@tanstack/react-query";
+import { getCart } from "@/actions/getCart";
 
 export default function CartPage() {
     const {
@@ -22,11 +24,13 @@ export default function CartPage() {
     const [coupon, setCoupon] = useState<number>(10000)
 
     const total = calculateTotal();
-    // const deliveryFee = 1500;
-    // const grandTotal = total + deliveryFee;
 
     const grandTotalWithCoupon = total + coupon;
 
+    const { data: GetCart } = useQuery({
+        queryKey: ['getCart'],
+        queryFn: getCart
+    })
 
     useEffect(() => {
         if (total < 100000) {
@@ -38,12 +42,14 @@ export default function CartPage() {
 
     const goToShop = () => router.push("/");
 
+    console.log(GetCart);
+
     return (
         <div className="min-h-screen bg-redpay-cream pt-10 pb-20 px-4 md:px-12 relative">
             <h1 className="text-4xl font-bold font-century text-redpay-red text-center mb-2">Your Cart</h1>
             <p className="text-center text-redpay-grey font-century mb-12">Review your items before checkout.</p>
 
-            {cartItems.length === 0 ? (
+            {GetCart?.data.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
                     <div className="relative">
                         <Icon icon="solar:cart-large-2-linear" className="w-24 h-24 text-redpay-red/50" />
@@ -59,7 +65,7 @@ export default function CartPage() {
                 <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Left: Items */}
                     <div className="lg:col-span-2 flex flex-col gap-6">
-                        {cartItems.map((item) => (
+                        {GetCart?.data.map((item: any) => (
                             <div key={`${item.id}-${item.size}`} className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10">
                                 <div className="relative h-24 w-24 bg-gray-50 rounded-lg overflow-hidden shrink-0">
                                     <Image src={item.image} alt={item.name} fill className="object-cover" />
@@ -178,7 +184,7 @@ export default function CartPage() {
             {/* Modal Injection */}
             {showModal && (
                 <CheckoutModal
-                    totalAmount={total}
+                    totalAmount={grandTotalWithCoupon}
                     onClose={() => setShowModal(false)}
                 />
             )}

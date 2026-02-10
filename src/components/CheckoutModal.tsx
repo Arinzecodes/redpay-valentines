@@ -26,11 +26,13 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
 
   const { clearCart } = useCart();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   const [reference, setReference] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
 
-  const { mutate: CreateOrderMutation, isPending } = useMutation({
+
+  const { mutate: CreateOrderMutation, isPending, data } = useMutation({
     mutationFn: createOrder,
     onSuccess: (data) => {
       showToast(data.status ? "success" : "error", data.message)
@@ -43,6 +45,8 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   })
 
   const handleCreateOrder = (values: any) => {
+    setEmail(values.customerEmail);
+
     CreateOrderMutation({
       customerEmail: values.customerEmail,
       customerName: values.customerName,
@@ -67,7 +71,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   };
 
-  console.log({ reference });
+  console.log(reference);
 
   const redPayCallback = async (response: any, ref: string) => {
     if (response.status === "success" || response.status === "completed") {
@@ -76,43 +80,46 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   };
 
-  // const payWithRedpay = async () => {
-  //   if (typeof window === "undefined" || !window.RedPayPop) {
-  //     console.log("RedPay SDK not loaded yet.");
-  //     return;
-  //   }
+  const payWithRedpay = async () => {
 
-  //   setLoading(true);
+    if (!email) {
+      showToast("error", "Email is required to proceed with payment");
+      return;
+    }
 
-  //   // Generate reference and store it for later verification
-  //   const ref = `REF-${Math.ceil(Math.random() * 10e10)}`;
-  //   setReference(ref);
+    if (typeof window === "undefined" || !window.RedPayPop) {
+      console.log("RedPay SDK not loaded yet.");
+      return;
+    }
 
-  //   try {
-  //     const handler = await window.RedPayPop.setup({
-  //       key: "PK_A5B84429D5F3F20EFA9B20250319110107", // Test Key
-  //       amount: totalAmount * 100, // Amount in kobo,
-  //       email,
-  //       currency: "NGN",
-  //       channels: ["CARD", "USSD", "TRANSFER"],
-  //       ref,
-  //       onClose: function () {
-  //         console.log("Window closed.");
-  //         setLoading(false);
-  //       },
-  //       callback: function (response: any) {
-  //         redPayCallback(response, ref);
-  //       },
-  //       onError: function (error: any) {
-  //         console.error("RedPay error", error);
-  //       },
-  //     });
 
-  //     await handler.openIframe();
-  //   } catch (err: any) {
-  //     console.error("Error initializing RedPay:", err);
-  //   }
-  // };
+    setReference(data?.data.reference);
+
+    try {
+      const handler = await window.RedPayPop.setup({
+        key: "PK_A5B84429D5F3F20EFA9B20250319110107", // Test Key
+        amount: totalAmount * 100, // Amount in kobo,
+        email,
+        currency: "NGN",
+        channels: ["CARD", "USSD", "TRANSFER"],
+        reference,
+        onClose: function () {
+          console.log("Window closed.");
+          // setLoading(false);
+        },
+        callback: function (response: any) {
+          redPayCallback(response, reference);
+        },
+        onError: function (error: any) {
+          console.error("RedPay error", error);
+        },
+      });
+
+      await handler.openIframe();
+    } catch (err: any) {
+      console.error("Error initializing RedPay:", err);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -136,13 +143,17 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
         </div>
 
         {/* Form */}
-        <Formik initialValues={{
-          customerEmail: "",
-          customerName: "",
-          customerPhoneNumber: "",
-          shippingAddress: "",
-        }}
-          onSubmit={handleCreateOrder}
+        <Formik
+          initialValues={{
+            customerEmail: "",
+            customerName: "",
+            customerPhoneNumber: "",
+            shippingAddress: "",
+          }}
+          onSubmit={(values) => {
+            handleCreateOrder(values)
+            payWithRedpay()
+          }}
           validationSchema={FormSchema}
           validateOnChange
           validateOnBlur
@@ -228,9 +239,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
                 </button>
                 <button
                   type='submit'
-                  // onClick={() => {
-                  //   handleCreateOrder()
-                  // }}
                   disabled={!isValid || !dirty || isPending || loading}
                   className="flex-[2] py-3 rounded-lg bg-redpay-dark text-white font-century font-bold hover:bg-black transition-all flex items-center justify-center gap-2 disabled:bg-redpay-dark/20"
                 >
