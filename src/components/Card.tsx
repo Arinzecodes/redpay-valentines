@@ -7,6 +7,7 @@ import Image, { StaticImageData } from "next/image";
 import ProductQuickViewModal from "./ProductQuickViewModal";
 import { useMutation } from "@tanstack/react-query";
 import { addCart } from "@/actions/addCart";
+import { useCart } from "@/context/CartContextProvider";
 // import { useCart } from "@/context/CartContextProvider";
 
 interface CardProps {
@@ -19,7 +20,7 @@ interface CardProps {
 }
 
 const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: CardProps) => {
-    // const { addToCart } = useCart();
+    const { addToCart } = useCart();
     const [showQuickView, setShowQuickView] = useState(false);
 
     // Old Price logic
@@ -119,16 +120,16 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleQuickAdd();
-                                // if (itemData) {
-                                //     addToCart({
-                                //         id: itemData.id,
-                                //         name: itemData.cardTitle,
-                                //         price: itemData.price,
-                                //         image: itemData.displayPics[0].pic,
-                                //         quantity: 1,
-                                //         size: "Regular"
-                                //     });
-                                // }
+                                if (itemData) {
+                                    addToCart({
+                                        id: itemData.id,
+                                        name: itemData.cardTitle,
+                                        price: itemData.price,
+                                        image: itemData.displayPics[0].pic,
+                                        quantity: 1,
+                                        size: "Regular"
+                                    });
+                                }
                             }}
                             className="w-8 h-8 md:w-11 md:h-11 rounded-full bg-[#FDEDF3] border border-[#C80000] flex items-center justify-center text-[#C80000] hover:bg-[#C80000] hover:text-white transition-colors shrink-0"
                         >
