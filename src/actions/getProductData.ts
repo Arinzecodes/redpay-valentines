@@ -45,27 +45,31 @@ export interface FetchProductsResponse {
 
 export const getProducts = async () => {
   // Fallback to the staging URL if the env var isn't set
-  const BASE_URL = process.env.NEXT_PUBLIC_REDPAY_STORE_BASE_URL || "https://redpaystore.staging.redpay.africa";
+  const BASE_URL = process.env.NEXT_PUBLIC_REDPAY_STORE_BASE_URL;
 
   try {
     // No Authorization header needed
-    const response = await fetch(`${BASE_URL}/api/reporting/list/products?pageSize=100`, {
-      method: "GET",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${BASE_URL}/api/reporting/list/products?pageSize=100`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        next: { revalidate: 60 }, // Cache data for 60 seconds (ISR)
       },
-      next: { revalidate: 60 } // Cache data for 60 seconds (ISR)
-    });
+    );
 
     if (!response.ok) {
-      console.error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+      console.error(
+        `Failed to fetch products: ${response.status} ${response.statusText}`,
+      );
       return [];
     }
 
     const data: FetchProductsResponse = await response.json();
     return data.items || [];
-    
   } catch (error) {
     console.error("Error fetching products:", error);
     return [];
