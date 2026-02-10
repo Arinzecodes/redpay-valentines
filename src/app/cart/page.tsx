@@ -7,12 +7,10 @@ import CustomButton from "@/components/CustomButton";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CheckoutModal from "@/components/CheckoutModal";
-import { useQuery } from "@tanstack/react-query";
-import { getCart } from "@/actions/getCart";
 
 export default function CartPage() {
     const {
-        // cartItems,
+        cartItems,
         removeFromCart,
         updateQuantity,
         calculateTotal,
@@ -20,36 +18,39 @@ export default function CartPage() {
 
     const router = useRouter();
     const [showModal, setShowModal] = useState(false);
-    const [isTermsAccepted, setIsTermsAccepted] = useState(false); // The Gatekeeper
-    const [coupon, setCoupon] = useState<number>(10000)
+    const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+    
+    // Default to 0 initially, useEffect will update it immediately
+    const [coupon, setCoupon] = useState<number>(0);
 
     const total = calculateTotal();
 
-    const grandTotalWithCoupon = total + coupon;
-
-    const { data: GetCartProducts } = useQuery({
-        queryKey: ['getCartProducts'],
-        queryFn: getCart
-    })
-
+    // 1. UPDATE: New Coupon Logic
     useEffect(() => {
-        if (total < 100000) {
-            setCoupon(1500)
+        if (total < 20000) {
+            // Orders below 20k get 3k off
+            setCoupon(3000);
+        } else if (total <= 100000) {
+            // Orders 20k - 100k get 5k off
+            setCoupon(5000);
         } else {
-            setCoupon(10000)
+            // Orders above 100k get 10k off
+            setCoupon(10000);
         }
-    }, [total])
+    }, [total]);
+
+    // 2. UPDATE: Math changed from (+) to (-)
+    // We use Math.max(0, ...) to ensure the total never goes below zero
+    const grandTotalWithCoupon = Math.max(0, total - coupon);
 
     const goToShop = () => router.push("/");
-
-    console.log(GetCartProducts);
 
     return (
         <div className="min-h-screen bg-redpay-cream pt-10 pb-20 px-4 md:px-12 relative">
             <h1 className="text-4xl font-bold font-century text-redpay-red text-center mb-2">Your Cart</h1>
             <p className="text-center text-redpay-grey font-century mb-12">Review your items before checkout.</p>
 
-            {GetCartProducts?.data?.length === 0 ? (
+            {cartItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
                     <div className="relative">
                         <Icon icon="solar:cart-large-2-linear" className="w-24 h-24 text-redpay-red/50" />
@@ -65,22 +66,22 @@ export default function CartPage() {
                 <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Left: Items */}
                     <div className="lg:col-span-2 flex flex-col gap-6">
-                        {GetCartProducts?.data?.map((item: any) => (
-                            <div key={`${item?.id}-${item?.size}`} className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10">
+                        {cartItems.map((item) => (
+                            <div key={`${item.id}-${item.size}`} className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10">
                                 <div className="relative h-24 w-24 bg-gray-50 rounded-lg overflow-hidden shrink-0">
-                                    <Image src={item?.image} alt={item?.name} fill className="object-cover" />
+                                    <Image src={item.image} alt={item.name} fill className="object-cover" />
                                 </div>
                                 <div className="flex-grow flex flex-col justify-between">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="font-bold text-redpay-dark text-lg">{item?.name}</h3>
-                                            <p className="text-sm text-redpay-grey">Size: {item?.size}</p>
+                                            <h3 className="font-bold text-redpay-dark text-lg">{item.name}</h3>
+                                            <p className="text-sm text-redpay-grey">Size: {item.size}</p>
                                             <div className="flex items-center gap-1 mt-1">
                                                 <Icon icon="solar:danger-circle-linear" className="text-redpay-orange w-4 h-4" />
                                                 <span className="text-xs text-redpay-orange font-century">Low stock</span>
                                             </div>
                                         </div>
-                                        <p className="font-bold text-redpay-red text-xl">₦{item?.price.toLocaleString()}</p>
+                                        <p className="font-bold text-redpay-red text-xl">₦{item.price.toLocaleString()}</p>
                                     </div>
 
                                     <div className="flex justify-between items-center mt-2">
@@ -130,13 +131,11 @@ export default function CartPage() {
                                 <span>Subtotal</span>
                                 <span className="font-bold text-redpay-dark">₦{total.toLocaleString()}</span>
                             </div>
-                            {/* <div className="flex justify-between">
-                                <span>Delivery</span>
-                                <span className="font-bold text-redpay-dark">₦{deliveryFee.toLocaleString()}</span>
-                            </div> */}
+                            
                             <div className="flex justify-between">
                                 <span>Discount</span>
-                                <span className="font-bold text-redpay-dark">(₦{coupon.toLocaleString()})</span>
+                                {/* Added minus sign to visualize deduction */}
+                                <span className="font-bold text-redpay-red">- ₦{coupon.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between text-redpay-red font-bold text-xl pt-4 border-t">
                                 <span>Total</span>
@@ -146,12 +145,8 @@ export default function CartPage() {
 
                         {/* Disclaimer */}
                         <div className="p-3 bg-redpay-cream rounded-lg mb-6 border border-redpay-orange/20">
-                            {/* <div className="flex items-center gap-2 mb-2 text-redpay-orange">
-                                <Icon icon="solar:danger-triangle-linear" />
-                                <span className="font-bold text-xs uppercase">Important Info</span>
-                            </div> */}
                             <p className="text-xs text-redpay-grey leading-relaxed">
-                                By completing this purchase, you acknowledge and agree that your order fulfillment and  delivery will be managed entirely by the merchant. RedPay Store serves as a marketplace  platform connecting buyers and sellers. Delivery timelines, methods, and arrangements  are the sole responsibility of the merchant as specified in the product listing.
+                                By completing this purchase, you acknowledge and agree that your order fulfillment and delivery will be managed entirely by the merchant. RedPay Store serves as a marketplace platform connecting buyers and sellers. Delivery timelines, methods, and arrangements are the sole responsibility of the merchant as specified in the product listing.
                             </p>
                         </div>
 
@@ -184,6 +179,7 @@ export default function CartPage() {
             {/* Modal Injection */}
             {showModal && (
                 <CheckoutModal
+                    // 3. UPDATE: Pass the discounted total to the checkout modal
                     totalAmount={grandTotalWithCoupon}
                     onClose={() => setShowModal(false)}
                 />
