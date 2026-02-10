@@ -22,19 +22,19 @@ export default function CartPage() {
     const [coupon, setCoupon] = useState<number>(10000)
 
     const total = calculateTotal();
-    const deliveryFee = 1500; // Example fixed fee, can be dynamic
-    const grandTotal = total + deliveryFee;
+    // const deliveryFee = 1500;
+    // const grandTotal = total + deliveryFee;
 
-    const grandTotalWithCoupon = grandTotal - coupon;
+    const grandTotalWithCoupon = total + coupon;
 
 
     useEffect(() => {
-        if (grandTotal < 100000) {
-            setCoupon(5000)
+        if (total < 100000) {
+            setCoupon(1500)
         } else {
             setCoupon(10000)
         }
-    }, [grandTotal])
+    }, [total])
 
     const goToShop = () => router.push("/");
 
@@ -124,13 +124,13 @@ export default function CartPage() {
                                 <span>Subtotal</span>
                                 <span className="font-bold text-redpay-dark">₦{total.toLocaleString()}</span>
                             </div>
-                            <div className="flex justify-between">
+                            {/* <div className="flex justify-between">
                                 <span>Delivery</span>
                                 <span className="font-bold text-redpay-dark">₦{deliveryFee.toLocaleString()}</span>
-                            </div>
+                            </div> */}
                             <div className="flex justify-between">
                                 <span>Coupon</span>
-                                <span className="font-bold text-redpay-dark">(-₦{coupon.toLocaleString()})</span>
+                                <span className="font-bold text-redpay-dark">(₦{coupon.toLocaleString()})</span>
                             </div>
                             <div className="flex justify-between text-redpay-red font-bold text-xl pt-4 border-t">
                                 <span>Total</span>
@@ -178,7 +178,7 @@ export default function CartPage() {
             {/* Modal Injection */}
             {showModal && (
                 <CheckoutModal
-                    totalAmount={grandTotal}
+                    totalAmount={total}
                     onClose={() => setShowModal(false)}
                 />
             )}
