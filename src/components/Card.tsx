@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-// import { useCart } from "@/context/CartContextProvider";
-import { SALE_ITEMS, showToast } from "@/utils";
+import { showToast } from "@/utils";
 import { Icon } from "@iconify/react";
 import Image, { StaticImageData } from "next/image";
 import ProductQuickViewModal from "./ProductQuickViewModal";
@@ -16,22 +15,21 @@ interface CardProps {
     price: number | string;
     cardId: string;
     stock?: number;
+    itemData: any; // NEW PROP: Receive full data to pass to modal
 }
 
-const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) => {
+const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: CardProps) => {
+    const { addToCart } = useCart();
     const [showQuickView, setShowQuickView] = useState(false);
 
-    // Find item details
-    const item = SALE_ITEMS.find((i) => i.id === cardId);
-    const oldPrice = item?.oldPrice;
+    // Old Price logic (API returns null for now, but kept for UI compatibility)
+    const oldPrice = itemData?.oldPrice;
     const currentPrice = typeof price === 'number' ? price : Number(price);
 
-    // Calculate Discount
     let discountPercentage = 0;
     if (oldPrice && oldPrice > currentPrice) {
         discountPercentage = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
     }
-
 
     const { mutate: AddToCartMutation } = useMutation({
         mutationFn: addCart,
@@ -41,31 +39,14 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) 
         onError: (error: Error) => {
             showToast("error", error.message);
         }
-    })
+    });
 
     const handleQuickAdd = () => {
         AddToCartMutation({
-            productId: "PRD-01KH3GFE0DYV",
+            productId: cardId, // Use the dynamic cardId
             quantity: 1
         });
     };
-
-    // const handleQuickAdd = (e: React.MouseEvent) => {
-    //     e.stopPropagation();
-    //     if (item) {
-    //         addToCart({
-    //             id: item.id,
-    //             name: item.cardTitle,
-    //             price: item.price,
-    //             image: typeof item.displayPics[0].pic === 'string'
-    //                 ? item.displayPics[0].pic
-    //                 : (item.displayPics[0].pic as StaticImageData).src,
-    //             quantity: 1,
-    //             size: "Regular"
-    //         });
-    //         showToast("success", "Added to Cart!");
-    //     }
-    // };
 
     const handleViewDetails = () => {
         setShowQuickView(true);
@@ -73,13 +54,11 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) 
 
     return (
         <>
-            {/* FIX: Made height auto on mobile, fixed on desktop. Width full on mobile, fixed max on desktop. */}
             <div className="group relative bg-white w-full md:max-w-[295px] h-auto md:h-[420px] rounded-xl shadow-card hover:shadow-xl transition-all duration-300 flex flex-col">
 
                 {/* 1. Image Section */}
                 <div
                     onClick={handleViewDetails}
-                    // FIX: Reduced height on mobile (160px), kept 231px on desktop
                     className="relative h-[160px] md:h-[231px] w-full bg-[#F7F7F7] rounded-b-xl overflow-hidden cursor-pointer"
                 >
                     <Image
@@ -88,8 +67,6 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) 
                         fill
                         className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                     />
-
-                    {/* Discount Badge */}
                     {discountPercentage > 0 && (
                         <div className="absolute top-0 right-0 bg-[#C80000] text-white font-century font-bold text-[10px] md:text-sm px-2 md:px-3 py-1 rounded-bl-lg z-10">
                             -{discountPercentage}%
@@ -99,10 +76,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) 
 
                 {/* 2. Content Section */}
                 <div className="p-3 md:p-4 flex flex-col justify-between flex-grow gap-2 md:gap-0">
-
-                    {/* Text Content */}
                     <div onClick={handleViewDetails} className="cursor-pointer">
-                        {/* FIX: Smaller font on mobile */}
                         <h3 className="font-century font-bold text-sm md:text-lg text-[#2E2E2E] truncate">
                             {cardTitle}
                         </h3>
@@ -122,7 +96,6 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) 
                                     ₦{oldPrice.toLocaleString()}
                                 </span>
                             )}
-                            {/* FIX: Smaller price font on mobile */}
                             <span className="text-base md:text-xl font-bold text-[#C80000] font-century">
                                 ₦{currentPrice.toLocaleString()}
                             </span>
@@ -136,7 +109,6 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) 
                                 e.stopPropagation();
                                 setShowQuickView(true);
                             }}
-                            // FIX: Smaller button padding and text on mobile
                             className="flex-1 border border-[#C80000] text-[#C80000] font-times rounded-full px-2 py-1.5 md:px-6 md:py-2 hover:bg-[#C80000] hover:text-white transition-colors text-xs md:text-lg whitespace-nowrap"
                         >
                             View Details
@@ -153,10 +125,10 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 10 }: CardProps) 
                 </div>
             </div>
 
-            {/* Modal */}
+            {/* Modal - Passing full item data directly */}
             {showQuickView && (
                 <ProductQuickViewModal
-                    cardId={cardId}
+                    itemData={itemData}
                     onClose={() => setShowQuickView(false)}
                 />
             )}
