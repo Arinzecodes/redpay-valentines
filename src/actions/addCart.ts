@@ -7,7 +7,7 @@ interface AddCartProps {
 
 export async function addCart(values: AddCartProps) {
     try {
-        // FIX: Use the correct environment variable name we set up earlier
+        // ✅ FIX: Use the correct ENV variable
         const BASE_URL = process.env.NEXT_PUBLIC_REDPAY_STORE_BASE_URL || "https://redpaystore.staging.redpay.africa";
 
         if (!BASE_URL) {
