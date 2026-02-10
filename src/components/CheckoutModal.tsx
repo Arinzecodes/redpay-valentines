@@ -152,7 +152,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
           }}
           onSubmit={(values) => {
             handleCreateOrder(values)
-            payWithRedpay()
+            // payWithRedpay()
           }}
           validationSchema={FormSchema}
           validateOnChange
