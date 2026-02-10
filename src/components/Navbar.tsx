@@ -24,6 +24,20 @@ const Navbar = () => {
 
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // --- FETCH PRODUCTS ON MOUNT ---
+    useEffect(() => {
+        const fetchAllProducts = async () => {
+            try {
+                const data = await getProducts();
+                const mapped = data.map(mapProductToUI);
+                setAllProducts(mapped);
+            } catch (error) {
+                console.error("Failed to load products for search", error);
+            }
+        };
+        fetchAllProducts();
+    }, []);
+
     // --- NAVIGATION HANDLERS ---
     const goHome = () => router.push("/");
     const goToCart = () => router.push("/cart");
@@ -73,15 +87,16 @@ const Navbar = () => {
         }
     };
 
-    const handleProductClick = (id: string) => {
+    const handleProductClick = (product: any) => {
         setSearchQuery("");
         setSearchResults([]);
         setIsSearchOpen(false);
-        setSelectedProductId(id);
+        // Set the full object so the Modal doesn't need to look it up
+        setSelectedProduct(product);
     };
 
     const handleCloseModal = () => {
-        setSelectedProductId(null);
+        setSelectedProduct(null);
     };
 
     useEffect(() => {
@@ -102,22 +117,14 @@ const Navbar = () => {
             {/* 1. ANIMATION STYLES: LEFT TO RIGHT */}
             <style jsx global>{`
                 @keyframes scroll-left-to-right {
-                    0% {
-                        transform: translateX(-50%); /* Start hidden on the Left */
-                    }
-                    100% {
-                        transform: translateX(100vw); /* Move to the Right edge */
-                    }
+                    0% { transform: translateX(-50%); }
+                    100% { transform: translateX(100vw); }
                 }
-
                 .animate-scroll-ltr {
-                    /* 20s speed, linear movement, infinite loop */
                     animation: scroll-left-to-right 30s linear infinite;
                     display: flex;
-                    width: max-content; /* Important: Allows the block to be wider than screen */
+                    width: max-content;
                 }
-                
-                /* Optional: Pause on hover */
                 .animate-scroll-ltr:hover {
                     animation-play-state: paused;
                 }
@@ -126,7 +133,6 @@ const Navbar = () => {
             <header className="w-full z-50 sticky top-0">
                 {/* 2. Top Marquee Bar */}
                 <div className="w-full h-10 bg-[#F4E1C6] flex items-center overflow-hidden relative">
-                    {/* Applied 'animate-scroll-ltr' here */}
                     <div className="animate-scroll-ltr flex gap-8 items-center whitespace-nowrap">
                         {[1, 2, 3, 4, 5].map((i) => (
                             <div key={i} className="flex items-center gap-8">
@@ -220,7 +226,8 @@ const Navbar = () => {
                                         {searchResults.map((item: any) => (
                                             <div
                                                 key={item.id}
-                                                onClick={() => handleProductClick(item.id)}
+                                                // Pass the full item object
+                                                onClick={() => handleProductClick(item)}
                                                 className="flex items-center gap-3 p-3 hover:bg-[#FAF5F0] cursor-pointer border-b border-gray-100 last:border-none"
                                             >
                                                 {/* Image */}
