@@ -33,6 +33,9 @@ const ProductSection = ({ title, subtitle, category, products }: ProductSectionP
     // 3. Determine how many to show
     const itemsToRender = showAll ? categoryItems : categoryItems.slice(0, 4);
 
+    console.log(itemsToRender);
+
+
     return (
         <section id={category} className="w-full max-w-[1240px] mx-auto px-4 md:px-8 py-10">
             {/* Header */}
@@ -55,10 +58,10 @@ const ProductSection = ({ title, subtitle, category, products }: ProductSectionP
                             cardId={item.id}
                             cardTitle={item.cardTitle}
                             price={item.price}
-                            imageSource={item.displayPics[0].pic} 
+                            imageSource={item.displayPics[0].pic}
                             stock={item.stock}
                             // Pass the full item object to Card so it can pass it to QuickView
-                            itemData={item} 
+                            itemData={item}
                         />
                     ))
                 ) : (
@@ -67,11 +70,11 @@ const ProductSection = ({ title, subtitle, category, products }: ProductSectionP
                     </div>
                 )}
             </div>
-            
+
             {/* Toggle Button - Only show if we actually have items */}
             {categoryItems.length > 0 && (
                 <div className="flex justify-center mt-12">
-                    <button 
+                    <button
                         onClick={() => setShowAll(!showAll)}
                         className="bg-redpay-red text-white px-8 py-3 rounded-full font-bold font-century hover:bg-red-800 transition-colors shadow-md min-w-[160px]"
                     >

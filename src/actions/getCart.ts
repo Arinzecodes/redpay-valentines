@@ -1,23 +1,12 @@
-interface AddCartProps {
-	productId: string;
-	quantity: number;
-}
-
-export async function addCart(values: AddCartProps) {
+export async function getCart() {
 	try {
 		const BASE_URL =
-			process.env.NEXT_PUBLIC_BASE_URL ||
+			process.env.NEXT_PUBLIC_REDPAY_STORE_BASE_URL ||
 			"https://redpaystore.staging.redpay.africa";
 
-		const endpoint = `${BASE_URL}/api/product/cart/add`;
+		const endpoint = `${BASE_URL}/api/product/cart/get`;
 
-		const response = await fetch(endpoint, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(values),
-		});
+		const response = await fetch(endpoint);
 
 		const data = await response.json();
 		if (!response.ok) {
