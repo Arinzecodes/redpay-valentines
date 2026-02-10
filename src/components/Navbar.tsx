@@ -6,10 +6,12 @@ import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContextProvider";
 import { RedpayImage } from "@/images";
-import { SALE_ITEMS } from "@/utils"; 
+// We removed SALE_ITEMS, so we import the fetcher and mapper instead
 
-// IMPORT THE MODAL HERE
+import { mapProductToUI } from "@/utils";
+
 import ProductQuickViewModal from "./ProductQuickViewModal"; 
+import { getProducts } from "@/actions/getProductData";
 
 const Navbar = () => {
     const router = useRouter();
@@ -19,10 +21,28 @@ const Navbar = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     
+    // Store all products here for searching
+    const [allProducts, setAllProducts] = useState<any[]>([]);
     const [searchResults, setSearchResults] = useState<any[]>([]); 
-    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+    
+    // Store the FULL product object, not just ID
+    const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // --- FETCH PRODUCTS ON MOUNT ---
+    useEffect(() => {
+        const fetchAllProducts = async () => {
+            try {
+                const data = await getProducts();
+                const mapped = data.map(mapProductToUI);
+                setAllProducts(mapped);
+            } catch (error) {
+                console.error("Failed to load products for search", error);
+            }
+        };
+        fetchAllProducts();
+    }, []);
 
     // --- NAVIGATION HANDLERS ---
     const goHome = () => router.push("/");
@@ -39,7 +59,6 @@ const Navbar = () => {
                     const headerOffset = 100;
                     const elementPosition = element.getBoundingClientRect().top;
                     const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                    
                     window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                 }
             }
@@ -63,8 +82,9 @@ const Navbar = () => {
         const query = e.target.value;
         setSearchQuery(query);
 
-        if (query.length > 1 && Array.isArray(SALE_ITEMS)) {
-            const results = SALE_ITEMS.filter((item: any) => 
+        if (query.length > 1) {
+            // Filter the live 'allProducts' state
+            const results = allProducts.filter((item: any) => 
                 item.cardTitle.toLowerCase().includes(query.toLowerCase())
             );
             setSearchResults(results);
@@ -73,15 +93,16 @@ const Navbar = () => {
         }
     };
 
-    const handleProductClick = (id: string) => {
+    const handleProductClick = (product: any) => {
         setSearchQuery("");
         setSearchResults([]);
         setIsSearchOpen(false);
-        setSelectedProductId(id);
+        // Set the full object so the Modal doesn't need to look it up
+        setSelectedProduct(product);
     };
 
     const handleCloseModal = () => {
-        setSelectedProductId(null);
+        setSelectedProduct(null);
     };
 
     useEffect(() => {
@@ -102,22 +123,14 @@ const Navbar = () => {
             {/* 1. ANIMATION STYLES: LEFT TO RIGHT */}
             <style jsx global>{`
                 @keyframes scroll-left-to-right {
-                    0% {
-                        transform: translateX(-50%); /* Start hidden on the Left */
-                    }
-                    100% {
-                        transform: translateX(100vw); /* Move to the Right edge */
-                    }
+                    0% { transform: translateX(-50%); }
+                    100% { transform: translateX(100vw); }
                 }
-
                 .animate-scroll-ltr {
-                    /* 20s speed, linear movement, infinite loop */
                     animation: scroll-left-to-right 30s linear infinite;
                     display: flex;
-                    width: max-content; /* Important: Allows the block to be wider than screen */
+                    width: max-content;
                 }
-                
-                /* Optional: Pause on hover */
                 .animate-scroll-ltr:hover {
                     animation-play-state: paused;
                 }
@@ -126,7 +139,6 @@ const Navbar = () => {
             <header className="w-full z-50 sticky top-0">
                 {/* 2. Top Marquee Bar */}
                 <div className="w-full h-10 bg-[#F4E1C6] flex items-center overflow-hidden relative">
-                    {/* Applied 'animate-scroll-ltr' here */}
                     <div className="animate-scroll-ltr flex gap-8 items-center whitespace-nowrap">
                         {[1, 2, 3, 4, 5].map((i) => (
                             <div key={i} className="flex items-center gap-8">
@@ -222,7 +234,8 @@ const Navbar = () => {
                                         {searchResults.map((item: any) => (
                                             <div 
                                                 key={item.id}
-                                                onClick={() => handleProductClick(item.id)}
+                                                // Pass the full item object
+                                                onClick={() => handleProductClick(item)}
                                                 className="flex items-center gap-3 p-3 hover:bg-[#FAF5F0] cursor-pointer border-b border-gray-100 last:border-none"
                                             >
                                                 {/* Image */}
@@ -269,9 +282,10 @@ const Navbar = () => {
             </header>
 
             {/* --- MODAL RENDERING --- */}
-            {selectedProductId && (
+            {selectedProduct && (
                 <ProductQuickViewModal 
-                    cardId={selectedProductId} 
+                    // Pass the full itemData object so the modal has everything it needs
+                    itemData={selectedProduct} 
                     onClose={handleCloseModal} 
                 />
             )}
