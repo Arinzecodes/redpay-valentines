@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { showToast } from "@/utils";
 import { useMutation } from "@tanstack/react-query";
-import { useCart } from "@/context/CartContextProvider";
 import { addCart } from "@/actions/addCart";
 
 interface ProductQuickViewProps {
@@ -14,7 +13,6 @@ interface ProductQuickViewProps {
 }
 
 const ProductQuickViewModal = ({ itemData, onClose }: ProductQuickViewProps) => {
-    // const { addToCart } = useCart(); // Optional if you want Context update
     const [quantity, setQuantity] = useState(1);
 
     const { mutate: AddToCartMutation } = useMutation({

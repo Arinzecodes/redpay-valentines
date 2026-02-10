@@ -6,8 +6,9 @@ import { Icon } from "@iconify/react";
 import Image, { StaticImageData } from "next/image";
 import ProductQuickViewModal from "./ProductQuickViewModal";
 import { useMutation } from "@tanstack/react-query";
-import { addCart } from "@/actions/addCart"; // Importing the Server Action
+import { addCart } from "@/actions/addCart";
 import { useCart } from "@/context/CartContextProvider";
+// import { useCart } from "@/context/CartContextProvider";
 
 interface CardProps {
     imageSource: StaticImageData | string;
@@ -15,7 +16,7 @@ interface CardProps {
     price: number | string;
     cardId: string;
     stock?: number;
-    itemData: any; 
+    itemData: any;
 }
 
 const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: CardProps) => {
@@ -45,7 +46,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
     const handleQuickAdd = () => {
         // 1. Call Backend
         AddToCartMutation({
-            productId: cardId, 
+            productId: cardId,
             quantity: 1
         });
     };
@@ -123,13 +124,14 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                                 handleQuickAdd();
                                 // 2. Optimistic UI Update (Context)
                                 if (itemData) {
-                                     addToCart({
+                                    addToCart({
                                         id: itemData.id,
                                         name: itemData.cardTitle,
                                         price: itemData.price,
                                         image: itemData.displayPics[0].pic,
                                         quantity: 1,
-                                        size: "Regular"
+                                        size: "Regular",
+                                        deliveryFee: itemData.deliveryFee
                                     });
                                 }
                             }}
