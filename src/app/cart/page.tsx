@@ -12,7 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCart } from "@/actions/getCart";
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, calculateTotal } =
+  const { cartItems, removeFromCart, calculateTotal } =
     useCart();
 
   const router = useRouter();
@@ -26,28 +26,28 @@ export default function CartPage() {
     queryFn: getCart,
   });
 
-  // const updateQuantity = (productId: string, type: "inc" | "dec") => {
-  //   queryClient.setQueryData(["getCartProducts"], (oldData: any) => {
-  //     if (!oldData) return oldData;
+  const updateQuantity = (productId: string, type: "inc" | "dec") => {
+    queryClient.setQueryData(["getCartProducts"], (oldData: any) => {
+      if (!oldData) return oldData;
 
-  //     return {
-  //       ...oldData,
-  //       data: oldData.data.map((item: any) => {
-  //         if (item.productId !== productId) return item;
+      return {
+        ...oldData,
+        data: oldData.data.map((item: any) => {
+          if (item.productId !== productId) return item;
 
-  //         if (type === "inc") {
-  //           return { ...item, quantity: item.quantity + 1 };
-  //         }
+          if (type === "inc") {
+            return { ...item, quantity: item.quantity + 1 };
+          }
 
-  //         if (type === "dec" && item.quantity > 1) {
-  //           return { ...item, quantity: item.quantity - 1 };
-  //         }
+          if (type === "dec" && item.quantity > 1) {
+            return { ...item, quantity: item.quantity - 1 };
+          }
 
-  //         return item;
-  //       }),
-  //     };
-  //   });
-  // };
+          return item;
+        }),
+      };
+    });
+  };
 
   const total = calculateTotal();
   const grandTotal = total;
@@ -97,7 +97,7 @@ export default function CartPage() {
         Review your items before checkout.
       </p>
 
-      {cartItems.length === 0 ? (
+      {GetCartProducts?.data.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
           <div className="relative">
             <Icon
@@ -127,15 +127,15 @@ export default function CartPage() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left: Items */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {cartItems.map((item) => (
+            {GetCartProducts?.data.map((item) => (
               <div
                 key={`${item.id}-${item.size}`}
                 className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10"
               >
                 <div className="relative h-24 w-24 bg-gray-50 rounded-lg overflow-hidden shrink-0">
                   <Image
-                    src={item.image}
-                    alt={item.name}
+                    src={item.productImage}
+                    alt={item.productName}
                     fill
                     className="object-cover"
                   />
@@ -144,7 +144,7 @@ export default function CartPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-bold text-redpay-dark text-lg">
-                        {item.name}
+                        {item.productName}
                       </h3>
                       <p className="text-sm text-redpay-grey">
                         Size: {item.size}
@@ -168,13 +168,7 @@ export default function CartPage() {
                     {/* Quantity Control */}
                     <div className="flex items-center border border-gray-300 rounded-lg">
                       <button
-                        onClick={() =>
-                          updateQuantity(
-                            item.id,
-                            item.size ?? "",
-                            Math.max(1, item.quantity - 1),
-                          )
-                        }
+                        onClick={() => updateQuantity(item.id, "dec")}
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         -
@@ -183,13 +177,7 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() =>
-                          updateQuantity(
-                            item.id,
-                            item.size ?? "",
-                            item.quantity + 1,
-                          )
-                        }
+                        onClick={() => updateQuantity(item.id, "inc")}
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         +
@@ -288,11 +276,10 @@ export default function CartPage() {
             <button
               onClick={() => setShowModal(true)}
               disabled={!isTermsAccepted}
-              className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${
-                isTermsAccepted
-                  ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
+              className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${isTermsAccepted
+                ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
             >
               Proceed to Checkout
             </button>

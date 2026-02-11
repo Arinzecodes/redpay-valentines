@@ -24,10 +24,11 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     shippingAddress: Yup.string().required("Shipping Address is required"),
   });
 
-  const { clearCart, cartItems } = useCart();
+  const { clearCart, calculateTotal } = useCart();
   const router = useRouter();
   const [loading] = useState(false);
 
+  const [email, setEmail] = useState("");
   const [reference, setReference] = useState<string>("");
   console.log({ ref: reference });
 
@@ -54,12 +55,12 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     mutationFn: createOrder,
     onSuccess: (data) => {
       try {
-        const ref = data?.data?.reference;
+        const ref = orderData?.data?.reference;
         if (!ref) throw new Error("Missing reference");
 
         showToast(data.status ? "success" : "error", data.message)
         setReference(ref);
-        payWithRedpay(ref, data.data.customerEmail);
+        payWithRedpay(ref);
       } catch (err) {
         console.error("Payment init failed:", err);
       }
@@ -72,13 +73,11 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   })
 
-  const productIds = cartItems.map(item => item.id);
 
 
   const handleCreateOrder = (values: any) => {
     CreateOrderMutation({
       ...values,
-      customerEmail: values.customerEmail,
     });
   };
 
@@ -109,28 +108,21 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
 
 
 
-  const payWithRedpay = async (ref: string, customerEmail: string) => {
+  const payWithRedpay = async (ref: string) => {
     if (typeof window === "undefined" || !window.RedPayPop) {
       showToast("error", "Payment SDK not loaded");
       return;
     }
 
-    console.log({
-      key: "...",
-      amount: totalAmount * 100,
-      email: customerEmail,
-      reference: ref
-    });
-
 
     try {
       const handler = window.RedPayPop.setup({
         key: "PK_A5B84429D5F3F20EFA9B20250319110107",
-        amount: totalAmount * 100,
-        email: customerEmail,
+        amount: calculateTotal() * 100,
+        email,
         currency: "NGN",
         channels: ["CARD", "USSD", "TRANSFER"],
-        reference: ref,
+        ref: ref,
 
         onClose() {
           console.log("Payment window closed");
@@ -176,6 +168,18 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
           </p>
         </div>
 
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="enter your email address"
+          className="border border-gray-300 px-3 py-2 w-full outline-none rounded-[8px] mb-4"
+        />
+
+        {/* <button onClick={payWithRedpay}>Rep</button> */}
+
+
+
         {/* Form */}
         <Formik
           initialValues={{
@@ -183,7 +187,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
             customerName: "",
             customerPhoneNumber: "",
             shippingAddress: "",
-            productIds: productIds
           }}
           onSubmit={(values) => {
             handleCreateOrder(values)
