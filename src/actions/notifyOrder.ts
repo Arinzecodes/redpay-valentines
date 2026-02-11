@@ -5,13 +5,13 @@ interface NotifyOrderProps {
 
 export async function notifyOrder(values: NotifyOrderProps) {
   try {
-    // const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-    // if (!BASE_URL) {
-    //   throw new Error("API base URL is not defined");
-    // }
+    if (!BASE_URL) {
+      throw new Error("API base URL is not defined");
+    }
 
-    const endpoint = `https://redpaystore.staging.redpay.africa/api/product/notify/payment`;
+    const endpoint = `${BASE_URL}/api/product/notify/payment`;
 
     const response = await fetch(endpoint, {
       method: "POST",

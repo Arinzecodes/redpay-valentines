@@ -3,14 +3,18 @@ interface CreateOrderProps {
 	customerEmail: string;
 	shippingAddress: string;
 	customerPhoneNumber: string;
-	productIds: string[];
+	// paymentMethod: string
 }
 
 export async function createOrder(values: CreateOrderProps) {
 	try {
-		// const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+		const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-		const endpoint = `https://redpaystore.staging.redpay.africa/api/product/order`;
+		if (!BASE_URL) {
+			throw new Error("API base URL is not defined");
+		}
+
+		const endpoint = `${BASE_URL}/api/product/order`;
 
 		const response = await fetch(endpoint, {
 			method: "POST",

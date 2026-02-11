@@ -15,7 +15,7 @@ const banners = [BANNER_ONE, BANNER_TWO, BANNER_THREE, BANNER_FOUR, BANNER_FIVE]
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Auto-switch logic (Every 7 seconds to match your code)
+  // Auto-switch logic (Every 5 seconds)
   useEffect(() => {
     const slideInterval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % banners.length);
@@ -27,7 +27,9 @@ const HeroSection = () => {
   return (
     <div className="w-full bg-[#FAFAFA] relative">
       
-      {/* 1. Define the Panning Animation */}
+      {/* 1. Define the Panning Animation 
+         This animates the object-position from Left (0%) to Right (100%).
+      */}
       <style jsx global>{`
         @keyframes pan-horizontal {
           0% {
@@ -43,6 +45,9 @@ const HeroSection = () => {
       `}</style>
 
       {/* Main Banner Carousel */}
+      {/* We kept the height tall (h-[300px] on mobile) so it looks good,
+         but now the animation reveals the hidden sides.
+      */}
       <div className="relative w-full h-[300px] md:h-[406px] flex items-center justify-center bg-redpay-cream overflow-hidden">
          
          {/* Images Stacked */}
@@ -59,7 +64,7 @@ const HeroSection = () => {
                     fill 
                     priority={index === 0} 
                     className={`object-cover ${
-                        // Only apply the animation to the CURRENT slide
+                        // Only apply the animation to the CURRENT slide so it resets for the next one
                         index === currentSlide ? "animate-pan" : ""
                     }`}
                 />
@@ -69,15 +74,15 @@ const HeroSection = () => {
          {/* Page Indicators */}
          <div className="absolute bottom-6 flex gap-2 z-20">
             {banners.map((_, index) => (
-               <div 
-                   key={index}
-                   onClick={() => setCurrentSlide(index)} 
-                   className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                       currentSlide === index 
-                           ? "w-8 bg-white" 
-                           : "w-2 bg-white/40 hover:bg-white/60"
-                   }`}
-               />
+                <div 
+                    key={index}
+                    onClick={() => setCurrentSlide(index)} 
+                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                        currentSlide === index 
+                            ? "w-8 bg-white" 
+                            : "w-2 bg-white/40 hover:bg-white/60"
+                    }`}
+                />
             ))}
          </div>
       </div>
