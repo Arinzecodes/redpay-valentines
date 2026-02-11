@@ -13,6 +13,8 @@ export async function notifyOrder(values: NotifyOrderProps) {
 
     const endpoint = `https://redpaystore.staging.redpay.africa/api/product/notify/payment`;
 
+    // jnksnfiwjakpomaf
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
