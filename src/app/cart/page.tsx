@@ -14,8 +14,7 @@ import { deleteFromCart } from "@/actions/deleteFromCart";
 import { showToast } from "@/utils";
 
 export default function CartPage() {
-  const { cartItems, calculateTotal, updateQuantity } =
-    useCart();
+  const { cartItems, calculateTotal, updateQuantity } = useCart();
 
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
@@ -54,16 +53,14 @@ export default function CartPage() {
   const { mutate: DeleteCartMutation } = useMutation({
     mutationFn: deleteFromCart,
     onSuccess: (data) => {
-      showToast(data.status ? "success" : "error", data.message)
+      showToast(data.status ? "success" : "error", data.message);
       // queryClient.invalidateQueries(['getCartProducts'])
-    }
+    },
   });
 
   const handleDeleteCart = (productId: string) => {
     DeleteCartMutation({ productId });
   };
-
-
 
   const total = calculateTotal();
   const grandTotal = total;
@@ -82,7 +79,6 @@ export default function CartPage() {
   );
 
   const grandTotalWithCoupon = grandTotal + totalDeliveryFee - coupon;
-
 
   useEffect(() => {
     if (total < 100000) {
@@ -140,9 +136,9 @@ export default function CartPage() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left: Items */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {GetCartProducts.data.map((item: any) => (
+            {GetCartProducts.data.map((item: any, index: number) => (
               <div
-                key={`${item.id}`}
+                key={index}
                 className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10"
               >
                 <div className="relative h-24 w-24 bg-gray-50 rounded-lg overflow-hidden shrink-0">
@@ -185,7 +181,7 @@ export default function CartPage() {
                           updateQuantity(
                             item.productId,
                             item.quantity - 1,
-                            item.productName
+                            item.productName,
                           )
                         }
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
@@ -200,7 +196,7 @@ export default function CartPage() {
                           updateQuantity(
                             item.productId,
                             item.quantity + 1,
-                            item.productName
+                            item.productName,
                           )
                         }
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
@@ -301,10 +297,11 @@ export default function CartPage() {
             <button
               onClick={() => setShowModal(true)}
               disabled={!isTermsAccepted}
-              className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${isTermsAccepted
-                ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
+              className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${
+                isTermsAccepted
+                  ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
             >
               Proceed to Checkout
             </button>
