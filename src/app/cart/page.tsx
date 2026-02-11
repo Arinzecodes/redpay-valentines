@@ -303,7 +303,37 @@ export default function CartPage() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false); // The Gatekeeper
-  const [coupon, setCoupon] = useState<number>(10000)
+  const [coupon, setCoupon] = useState<number>(10000);
+  const queryClient = useQueryClient();
+
+  const { data: GetCartProducts, isPending } = useQuery({
+    queryKey: ["getCartProducts"],
+    queryFn: getCart,
+  });
+
+
+  const updateQuantity = (productId: string, type: "inc" | "dec") => {
+    queryClient.setQueryData(["getCartProducts"], (oldData: any) => {
+      if (!oldData) return oldData;
+
+      return {
+        ...oldData,
+        data: oldData.data.map((item: any) => {
+          if (item.productId !== productId) return item;
+
+          if (type === "inc") {
+            return { ...item, quantity: item.quantity + 1 };
+          }
+
+          if (type === "dec" && item.quantity > 1) {
+            return { ...item, quantity: item.quantity - 1 };
+          }
+
+          return item;
+        }),
+      };
+    });
+  };
 
   const total = calculateTotal();
   const grandTotal = total;
@@ -323,7 +353,27 @@ export default function CartPage() {
   // console.log(totalDeliveryFee);
 
 
+  const handleDeleteCart = (productId: string) => {
+    DeleteCartMutation(productId)
+  }
+
+  const grandTotalWithCoupon = total + totalDeliveryFee - coupon;
+
+  useEffect(() => {
+    if (total < 100000) {
+      setCoupon(1500)
+    } else {
+      setCoupon(10000)
+    }
+  }, [total])
+
   const goToShop = () => router.push("/");
+
+
+  if (isPending) return <div className="pt-10 pb-20 px-4 md:px-12 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+    <Loader />
+  </div>;
+
 
   return (
     <div className="min-h-screen bg-redpay-cream pt-10 pb-20 px-4 md:px-12 relative">

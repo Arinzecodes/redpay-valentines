@@ -11,6 +11,7 @@ import CookieConsent from "@/components/CookieConsent";
 import AnalyticsLayout from "./layouts/analytics-layout";
 // FIX: Import the new button
 import ScrollToTopButton from "@/components/ScrollToTopButton";
+import Script from "next/script";
 
 // Ensure this variable matches what we put in tailwind.config.ts
 const centuryGothic = localFont({
@@ -35,30 +36,29 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en" className={centuryGothic.variable} data-theme="valentine">
-            <head>
-                <script
-                    async
-                    src="https://redpay-sdk-js.s3.eu-west-2.amazonaws.com/omni-payment-gateway-sdk.js"
-                ></script>
-            </head>
-            <body className="font-century antialiased bg-redpay-cream text-redpay-dark min-h-screen flex flex-col">
-                <ThemeContextProvider>
-                    <CartContextProvider>
-                        <ToastProvider>
-                            <ReactQueryProvider>
-                                <AnalyticsProvider>
-                                    <Navbar />
-                                    <CookieConsent />
-                                    <AnalyticsLayout>
-                                        <main className="flex-grow">
-                                            {children}
-                                        </main>
-                                    </AnalyticsLayout>
-
-                                    {/* FIX: Add the Scroll Button here */}
-                                    <ScrollToTopButton />
+  return (
+    <html lang="en" className={centuryGothic.variable} data-theme="valentine">
+      <head>
+        <script
+          async
+          src="https://redpay-sdk-js.s3.eu-west-2.amazonaws.com/omni-payment-gateway-sdk.js"
+        ></script>
+      </head>
+      <body className="font-century antialiased bg-redpay-cream text-redpay-dark min-h-screen flex flex-col">
+        <ThemeContextProvider>
+          <CartContextProvider>
+            <ToastProvider>
+              <ReactQueryProvider>
+                <AnalyticsProvider>
+                  <Navbar />
+                  <CookieConsent />
+                  <AnalyticsLayout>
+                    <main className="flex-grow">
+                      {children}
+                    </main>
+                  </AnalyticsLayout>
+                  {/* FIX: Add the Scroll Button here */}
+                  <ScrollToTopButton />
 
                                 </AnalyticsProvider>
                             </ReactQueryProvider>

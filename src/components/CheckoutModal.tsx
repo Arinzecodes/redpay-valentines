@@ -29,7 +29,8 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   const [loading] = useState(false);
 
   const [reference, setReference] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  console.log({ ref: reference });
+
 
   const { mutate: NotifyPaymentMutation } = useMutation({
     mutationFn: notifyOrder,
@@ -52,11 +53,19 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   const { mutate: CreateOrderMutation, isPending, data: orderData } = useMutation({
     mutationFn: createOrder,
     onSuccess: (data) => {
-      showToast(data.status ? "success" : "error", data.message)
-      const ref = orderData?.data.reference
-      setReference(ref);
-      payWithRedpay(ref);
+      try {
+        const ref = data?.data?.reference;
+        if (!ref) throw new Error("Missing reference");
+
+        showToast(data.status ? "success" : "error", data.message)
+        setReference(ref);
+        payWithRedpay(ref, data.data.customerEmail);
+      } catch (err) {
+        console.error("Payment init failed:", err);
+      }
     },
+
+
     onError: (error) => {
       showToast("error", error.message || "Failed to create order", { autoClose: 3000 });
       onClose()
@@ -67,13 +76,9 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
 
 
   const handleCreateOrder = (values: any) => {
-    setEmail(values.customerEmail)
     CreateOrderMutation({
+      ...values,
       customerEmail: values.customerEmail,
-      customerName: values.customerName,
-      customerPhoneNumber: values.customerPhoneNumber,
-      shippingAddress: values.shippingAddress,
-      productIds
     });
   };
 
@@ -92,7 +97,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   };
 
-  console.log(reference);
+
 
   const redPayCallback = async (response: any, ref: string) => {
     if (response.status === "success" || response.status === "completed") {
@@ -102,17 +107,27 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   };
 
-  const payWithRedpay = async (ref: string) => {
+
+
+  const payWithRedpay = async (ref: string, customerEmail: string) => {
     if (typeof window === "undefined" || !window.RedPayPop) {
       showToast("error", "Payment SDK not loaded");
       return;
     }
 
+    console.log({
+      key: "...",
+      amount: totalAmount * 100,
+      email: customerEmail,
+      reference: ref
+    });
+
+
     try {
       const handler = window.RedPayPop.setup({
         key: "PK_A5B84429D5F3F20EFA9B20250319110107",
         amount: totalAmount * 100,
-        email,
+        email: customerEmail,
         currency: "NGN",
         channels: ["CARD", "USSD", "TRANSFER"],
         reference: ref,
@@ -172,7 +187,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
           }}
           onSubmit={(values) => {
             handleCreateOrder(values)
-
           }}
           validationSchema={FormSchema}
           validateOnChange
