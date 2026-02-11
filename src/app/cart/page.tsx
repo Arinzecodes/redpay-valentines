@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 import CustomButton from "@/components/CustomButton";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CheckoutModal from "@/components/CheckoutModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCart } from "@/actions/getCart";
@@ -23,7 +23,6 @@ export default function CartPage() {
   const [isTermsAccepted, setIsTermsAccepted] = useState(false); // The Gatekeeper
   const [coupon, setCoupon] = useState<number>(10000);
   const queryClient = useQueryClient();
-  const [quantity] = useState(1)
 
   const { data: GetCartProducts, isPending } = useQuery({
     queryKey: ["getCartProducts"],
@@ -85,13 +84,16 @@ export default function CartPage() {
 
   const grandTotalWithCoupon = total + totalDeliveryFee - coupon;
 
-
-  if (total < 100000 && coupon !== 1500) setCoupon(1500);
-  if (total >= 100000 && coupon !== 10000) setCoupon(10000);
+  useEffect(() => {
+    if (total < 100000) {
+      setCoupon(1500)
+    } else {
+      setCoupon(10000)
+    }
+  }, [total])
 
   const goToShop = () => router.push("/");
 
-  console.log(quantity);
 
   if (isPending) return <div className="pt-10 pb-20 px-4 md:px-12 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
     <Loader />

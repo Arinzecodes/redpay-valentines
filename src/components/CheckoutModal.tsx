@@ -29,7 +29,8 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   const [loading] = useState(false);
 
   const [reference, setReference] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  console.log({ ref: reference });
+
 
   const { mutate: NotifyPaymentMutation } = useMutation({
     mutationFn: notifyOrder,
@@ -51,26 +52,14 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
 
   const { mutate: CreateOrderMutation, isPending } = useMutation({
     mutationFn: createOrder,
-    // onSuccess: (data) => {
-    //   try {
-    //     const ref = data?.data?.reference;
-    //     if (!ref) throw new Error("Missing reference");
-
-    //     showToast(data.status ? "success" : "error", data.message)
-    //     setReference(ref);
-    //     payWithRedpay(ref);
-    //   } catch (err) {
-    //     console.error("Payment init failed:", err);
-    //   }
-    // },
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       try {
         const ref = data?.data?.reference;
         if (!ref) throw new Error("Missing reference");
 
         showToast(data.status ? "success" : "error", data.message)
         setReference(ref);
-        payWithRedpay(ref, variables.customerEmail);
+        payWithRedpay(ref, data.data.customerEmail);
       } catch (err) {
         console.error("Payment init failed:", err);
       }
@@ -108,10 +97,11 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   };
 
 
+
   const redPayCallback = async (response: any, ref: string) => {
     if (response.status === "success" || response.status === "completed") {
       await verifyRedPayPayment(ref);
-      // handleNotifyPayment()
+      handleNotifyPayment()
       return;
     }
   };

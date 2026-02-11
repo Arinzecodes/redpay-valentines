@@ -11,6 +11,7 @@ import CookieConsent from "@/components/CookieConsent";
 import AnalyticsLayout from "./layouts/analytics-layout";
 // FIX: Import the new button
 import ScrollToTopButton from "@/components/ScrollToTopButton";
+import Script from "next/script";
 
 // Ensure this variable matches what we put in tailwind.config.ts
 const centuryGothic = localFont({
