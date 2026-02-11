@@ -53,7 +53,10 @@ export default function CartPage() {
     mutationFn: deleteFromCart,
     onSuccess: (data) => {
       showToast(data.status ? "success" : "error", data.message);
-      // queryClient.invalidateQueries(['getCartProducts'])
+
+      if (data.status) {
+        queryClient.invalidateQueries({ queryKey: ['getCartProducts'] });
+      }
     },
   });
 
