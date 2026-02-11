@@ -45,9 +45,9 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     },
   });
 
-  const handleNotifyPayment = () => {
+  const handleNotifyPayment = (ref: string) => {
     NotifyPaymentMutation({
-      orderReference: reference,
+      orderReference: ref,
       totalAmountPaid: totalAmount,
     });
   };
@@ -64,11 +64,12 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
         setEmail(variables?.customerEmail);
 
         console.log(data);
+
+        initiateRedPayPayment(ref, variables.customerEmail);
       } catch (err) {
         console.error("Payment init failed:", err);
       }
     },
-
     onError: (error) => {
       showToast("error", error.message || "Failed to create order", {
         autoClose: 3000,
@@ -80,7 +81,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   console.log(email);
 
   const handleCreateOrder = (values: any) => {
-    // setEmail(values.customerEmail);
     CreateOrderMutation({
       ...values,
     });
@@ -99,8 +99,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   };
 
-  // console.log({ reference });
-
   const redPayCallback = async (response: any, ref: string) => {
     if (response.status === "success" || response.status === "completed") {
       await verifyRedPayPayment(ref);
@@ -108,38 +106,37 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   };
 
-  const payWithRedpay = async () => {
+  const initiateRedPayPayment = async (ref: string, userEmail: string) => {
     if (typeof window === "undefined" || !window.RedPayPop) {
       console.log("RedPay SDK not loaded yet.");
+      showToast("error", "Payment system not ready. Please try again.");
       return;
     }
-
-    // Generate reference and store it for later verification
 
     try {
       const handler = window.RedPayPop.setup({
         key: "PK_A5B84429D5F3F20EFA9B20250319110107",
         amount: totalAmount * 100,
-        email: email,
+        email: userEmail,
         currency: "NGN",
         channels: ["CARD", "USSD", "TRANSFER"],
-        ref: reference,
+        ref: ref,
         onClose: function () {
           console.log("Window closed.");
         },
         callback: function (response: any) {
-          redPayCallback(response, reference);
-
-          handleNotifyPayment();
+          redPayCallback(response, ref);
+          handleNotifyPayment(ref);
         },
         onError: function (error: any) {
           console.error("RedPay error", error);
+          showToast("error", "Payment initialization failed");
         },
       });
-
       handler.openIframe();
     } catch (err: any) {
       console.error("Error initializing RedPay:", err);
+      showToast("error", "Failed to initialize payment");
     }
   };
 
@@ -164,16 +161,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
           </p>
         </div>
 
-        {/* <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="enter your email address"
-          className="border border-gray-300 px-3 py-2 w-full outline-none rounded-[8px] mb-4"
-        />
-
-        <button onClick={payWithRedpay}>Rep</button> */}
-
         {/* Form */}
         <Formik
           initialValues={{
@@ -184,7 +171,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
           }}
           onSubmit={(values) => {
             handleCreateOrder(values);
-            payWithRedpay();
           }}
           validationSchema={FormSchema}
           validateOnChange
