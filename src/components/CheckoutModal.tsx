@@ -113,10 +113,12 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
       return;
     }
 
+    console.log(ref);
+
     try {
       const handler = window.RedPayPop.setup({
-        key: "PK_A5B84429D5F3F20EFA9B20250319110107",
-        amount: totalAmount * 100,
+        key: process.env.NEXT_PUBLIC_RPG_PUBLIC_KEY,
+        amount: 100 * 100,
         email: userEmail,
         currency: "NGN",
         channels: ["CARD", "USSD", "TRANSFER"],
@@ -126,6 +128,8 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
         },
         callback: function (response: any) {
           redPayCallback(response, ref);
+          console.log(ref);
+
           handleNotifyPayment(ref);
         },
         onError: function (error: any) {

@@ -66,6 +66,9 @@ export default function CartPage() {
   const grandTotal = total;
 
   useEffect(() => {
+    if (grandTotal < 30000) {
+      setCoupon(1500);
+    }
     if (grandTotal < 100000) {
       setCoupon(5000);
     } else {
@@ -89,6 +92,10 @@ export default function CartPage() {
   }, [total]);
 
   const goToShop = () => router.push("/");
+
+  const quantityChange = () => {
+    console.log("clicked");
+  };
 
   if (isPending)
     return (
@@ -180,8 +187,7 @@ export default function CartPage() {
                         onClick={() =>
                           updateQuantity(
                             item.productId,
-                            item.quantity - 1,
-                            item.productName,
+                            item.quantity - 1 > 0 ? item.quantity - 1 : 1,
                           )
                         }
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
@@ -193,11 +199,7 @@ export default function CartPage() {
                       </span>
                       <button
                         onClick={() =>
-                          updateQuantity(
-                            item.productId,
-                            item.quantity + 1,
-                            item.productName,
-                          )
+                          updateQuantity(item.productId, item.quantity + 1)
                         }
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
