@@ -4,28 +4,25 @@ import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/context/CartContextProvider";
 import { RedpayImage } from "@/images";
-// We removed SALE_ITEMS, so we import the fetcher and mapper instead
 
 import { mapProductToUI } from "@/utils";
 
 import ProductQuickViewModal from "./ProductQuickViewModal";
 import { getProducts } from "@/actions/getProductData";
+import { getCart } from "@/actions/getCart";
+import { useQuery } from "@tanstack/react-query";
 
 const Navbar = () => {
   const router = useRouter();
-  const { cartItems } = useCart();
 
   // --- STATE ---
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Store all products here for searching
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
-  // Store the FULL product object, not just ID
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -122,6 +119,11 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [searchQuery]);
+
+  const { data: GetCartProducts } = useQuery({
+    queryKey: ["getCartProducts"],
+    queryFn: getCart,
+  });
 
   return (
     <>
@@ -222,11 +224,10 @@ const Navbar = () => {
               <div className="search-container flex items-center relative">
                 {/* Expandable Input Field */}
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    isSearchOpen
-                      ? "w-[180px] md:w-[240px] opacity-100 mr-2"
-                      : "w-0 opacity-0"
-                  }`}
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen
+                    ? "w-[180px] md:w-[240px] opacity-100 mr-2"
+                    : "w-0 opacity-0"
+                    }`}
                 >
                   <input
                     ref={inputRef}
@@ -245,11 +246,10 @@ const Navbar = () => {
                       ? "solar:close-circle-linear"
                       : "solar:magnifer-linear"
                   }
-                  className={`w-6 h-6 cursor-pointer transition-colors ${
-                    isSearchOpen
-                      ? "text-redpay-red"
-                      : "text-redpay-dark hover:text-redpay-red"
-                  }`}
+                  className={`w-6 h-6 cursor-pointer transition-colors ${isSearchOpen
+                    ? "text-redpay-red"
+                    : "text-redpay-dark hover:text-redpay-red"
+                    }`}
                   onClick={toggleSearch}
                 />
 
@@ -295,9 +295,9 @@ const Navbar = () => {
                   icon="solar:cart-large-2-linear"
                   className="w-7 h-7 text-redpay-dark group-hover:text-redpay-red transition-colors"
                 />
-                {cartItems.length > 0 && (
+                {GetCartProducts?.data?.length >= 0 && (
                   <span className="absolute -top-1 -right-1 bg-redpay-red text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
-                    {cartItems.length}
+                    {GetCartProducts?.data.length}
                   </span>
                 )}
               </div>

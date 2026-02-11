@@ -51,11 +51,11 @@ export default function CartPage() {
 
   const { mutate: DeleteCartMutation } = useMutation({
     mutationFn: deleteFromCart,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       showToast(data.status ? "success" : "error", data.message);
 
       if (data.status) {
-        queryClient.invalidateQueries({ queryKey: ['getCartProducts'] });
+        queryClient.invalidateQueries({ queryKey: ['getCartProducts', variables.productId] });
       }
     },
   });
