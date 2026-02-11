@@ -15,35 +15,29 @@ import Script from "next/script";
 
 // Ensure this variable matches what we put in tailwind.config.ts
 const centuryGothic = localFont({
-    src: [
-        {
-            path: "./fonts/centurygothic.ttf",
-            weight: "400",
-            style: "normal",
-        },
-    ],
-    variable: "--font-century-gothic",
-    display: "swap",
+  src: [
+    {
+      path: "./fonts/centurygothic.ttf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-century-gothic",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-    title: "RedPay Valentine's Store",
-    description: "Gift Fast. Eat Together. Look Good.",
+  title: "RedPay Valentine's Store",
+  description: "Gift Fast. Eat Together. Look Good.",
 };
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" className={centuryGothic.variable} data-theme="valentine">
-      <head>
-        <script
-          async
-          src="https://redpay-sdk-js.s3.eu-west-2.amazonaws.com/omni-payment-gateway-sdk.js"
-        ></script>
-      </head>
       <body className="font-century antialiased bg-redpay-cream text-redpay-dark min-h-screen flex flex-col">
         <ThemeContextProvider>
           <CartContextProvider>
@@ -53,19 +47,21 @@ export default function RootLayout({
                   <Navbar />
                   <CookieConsent />
                   <AnalyticsLayout>
-                    <main className="flex-grow">
-                      {children}
-                    </main>
+                    <main className="flex-grow">{children}</main>
                   </AnalyticsLayout>
+
                   {/* FIX: Add the Scroll Button here */}
                   <ScrollToTopButton />
-
-                                </AnalyticsProvider>
-                            </ReactQueryProvider>
-                        </ToastProvider>
-                    </CartContextProvider>
-                </ThemeContextProvider>
-            </body>
-        </html>
-    );
+                  <Script
+                    src="https://redpay-sdk-js.s3.eu-west-2.amazonaws.com/omni-payment-gateway-sdk.js"
+                    strategy="afterInteractive"
+                  />
+                </AnalyticsProvider>
+              </ReactQueryProvider>
+            </ToastProvider>
+          </CartContextProvider>
+        </ThemeContextProvider>
+      </body>
+    </html>
+  );
 }
