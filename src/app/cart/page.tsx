@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "@/context/CartContextProvider";
+import { CartItem, useCart } from "@/context/CartContextProvider";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import CustomButton from "@/components/CustomButton";
@@ -14,12 +14,10 @@ import { deleteFromCart } from "@/actions/deleteFromCart";
 import { showToast } from "@/utils";
 
 export default function CartPage() {
-  const { cartItems, calculateTotal, updateQuantity } = useCart();
-
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false); // The Gatekeeper
-  const [coupon, setCoupon] = useState<number>(10000);
+  const [discount, setDiscount] = useState<number>(10000);
   const queryClient = useQueryClient();
 
   const { data: GetCartProducts, isPending } = useQuery({
@@ -27,34 +25,37 @@ export default function CartPage() {
     queryFn: getCart,
   });
 
-  // const updateQuantity = (productId: string, type: "inc" | "dec") => {
-  //   queryClient.setQueryData(["getCartProducts"], (oldData: any) => {
-  //     if (!oldData) return oldData;
+  const updateQuantity = (productId: string, type: "inc" | "dec") => {
+    queryClient.setQueryData(["getCartProducts"], (oldData: any) => {
+      if (!oldData) return oldData;
 
-  //     return {
-  //       ...oldData,
-  //       data: oldData.data.map((item: any) => {
-  //         if (item.productId !== productId) return item;
+      return {
+        ...oldData,
+        data: oldData.data.map((item: any) => {
+          if (item.productId !== productId) return item;
 
-  //         if (type === "inc") {
-  //           return { ...item, quantity: item.quantity + 1 };
-  //         }
+          if (type === "inc") {
+            return { ...item, quantity: item.quantity + 1 };
+          }
 
-  //         if (type === "dec" && item.quantity > 1) {
-  //           return { ...item, quantity: item.quantity - 1 };
-  //         }
+          if (type === "dec" && item.quantity > 1) {
+            return { ...item, quantity: item.quantity - 1 };
+          }
 
-  //         return item;
-  //       }),
-  //     };
-  //   });
-  // };
+          return item;
+        }),
+      };
+    });
+  };
 
   const { mutate: DeleteCartMutation } = useMutation({
     mutationFn: deleteFromCart,
     onSuccess: (data) => {
       showToast(data.status ? "success" : "error", data.message);
-      // queryClient.invalidateQueries(['getCartProducts'])
+
+      if (data.status) {
+        queryClient.invalidateQueries({ queryKey: ["getCartProducts"] });
+      }
     },
   });
 
@@ -62,34 +63,29 @@ export default function CartPage() {
     DeleteCartMutation({ productId });
   };
 
-  const total = calculateTotal();
-  const grandTotal = total;
-
-  useEffect(() => {
-    if (grandTotal < 30000) {
-      setCoupon(1500);
-    }
-    if (grandTotal < 100000) {
-      setCoupon(5000);
-    } else {
-      setCoupon(10000);
-    }
-  }, [grandTotal]);
-
-  const totalDeliveryFee = cartItems.reduce(
-    (acc, item) => acc + (Number(item.deliveryFee) || 0),
+  const totalDeliveryFee = GetCartProducts?.data?.reduce(
+    (acc: number, item: CartItem) => acc + (Number(item.deliveryFee) || 0),
     0,
   );
 
-  const grandTotalWithCoupon = grandTotal + totalDeliveryFee - coupon;
+  const subTotal =
+    GetCartProducts?.data?.reduce(
+      (acc: number, item: CartItem) =>
+        acc + Number(item.price) * Number(item.quantity),
+      0,
+    ) ?? 0;
 
   useEffect(() => {
-    if (total < 100000) {
-      setCoupon(1500);
-    } else {
-      setCoupon(10000);
+    if (subTotal < 2000) {
+      setDiscount(0);
+    } else if (subTotal >= 2000 && subTotal <= 30000) {
+      setDiscount(1500);
+    } else if (subTotal >= 100000) {
+      setDiscount(10000);
     }
-  }, [total]);
+  }, [subTotal]);
+
+  const totalAmount = subTotal + totalDeliveryFee - discount;
 
   const goToShop = () => router.push("/");
 
@@ -184,12 +180,7 @@ export default function CartPage() {
                     {/* Quantity Control */}
                     <div className="flex items-center border border-gray-300 rounded-lg">
                       <button
-                        onClick={() =>
-                          updateQuantity(
-                            item.productId,
-                            item.quantity - 1 > 0 ? item.quantity - 1 : 1,
-                          )
-                        }
+                        onClick={() => updateQuantity(item.productId, "dec")}
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         -
@@ -198,9 +189,7 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity + 1)
-                        }
+                        onClick={() => updateQuantity(item.productId, "inc")}
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         +
@@ -241,7 +230,7 @@ export default function CartPage() {
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span className="font-bold text-redpay-dark">
-                  ₦{total.toLocaleString()}
+                  ₦{subTotal.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -253,12 +242,12 @@ export default function CartPage() {
               <div className="flex justify-between">
                 <span>Discount</span>
                 <span className="font-bold text-redpay-dark">
-                  (-₦{coupon.toLocaleString()})
+                  (-₦{discount.toLocaleString()})
                 </span>
               </div>
               <div className="flex justify-between text-redpay-red font-bold text-xl pt-4 border-t">
                 <span>Total</span>
-                <span>₦{grandTotalWithCoupon.toLocaleString()}</span>
+                <span>₦{totalAmount.toLocaleString()}</span>
               </div>
             </div>
 
@@ -314,7 +303,7 @@ export default function CartPage() {
       {/* Modal Injection */}
       {showModal && (
         <CheckoutModal
-          totalAmount={grandTotalWithCoupon}
+          totalAmount={totalAmount}
           onClose={() => setShowModal(false)}
         />
       )}

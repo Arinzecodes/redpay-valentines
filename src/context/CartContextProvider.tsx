@@ -10,13 +10,14 @@ export interface CartItem {
   image: StaticImageData | string;
   quantity: number;
   deliveryFee?: string;
+  productId?: string;
 }
 
 interface CartContextProps {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string, size: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   calculateTotal: () => number;
 
@@ -73,10 +74,10 @@ export const CartContextProvider = ({
     );
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number) => {
     setCartItems((currentItems) =>
       currentItems.map((item) =>
-        item.id === id ? { ...item, quantity } : item,
+        item.productId === productId ? { ...item, quantity } : item,
       ),
     );
   };
