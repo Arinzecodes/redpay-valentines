@@ -78,6 +78,7 @@ export const CartContextProvider = ({
     );
   };
 
+
   const clearCart = () => {
     setCartItems([]);
   };

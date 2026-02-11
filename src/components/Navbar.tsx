@@ -6,10 +6,12 @@ import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContextProvider";
 import { RedpayImage } from "@/images";
-import { SALE_ITEMS } from "@/utils";
+// We removed SALE_ITEMS, so we import the fetcher and mapper instead
 
-// IMPORT THE MODAL HERE
+import { mapProductToUI } from "@/utils";
+
 import ProductQuickViewModal from "./ProductQuickViewModal";
+import { getProducts } from "@/actions/getProductData";
 
 const Navbar = () => {
     const router = useRouter();
@@ -19,8 +21,12 @@ const Navbar = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Store all products here for searching
+    const [allProducts, setAllProducts] = useState<any[]>([]);
     const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+    // Store the FULL product object, not just ID
+    const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,7 +59,6 @@ const Navbar = () => {
                     const headerOffset = 100;
                     const elementPosition = element.getBoundingClientRect().top;
                     const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
                     window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                 }
             }
@@ -77,8 +82,9 @@ const Navbar = () => {
         const query = e.target.value;
         setSearchQuery(query);
 
-        if (query.length > 1 && Array.isArray(SALE_ITEMS)) {
-            const results = SALE_ITEMS.filter((item: any) =>
+        if (query.length > 1) {
+            // Filter the live 'allProducts' state
+            const results = allProducts.filter((item: any) =>
                 item.cardTitle.toLowerCase().includes(query.toLowerCase())
             );
             setSearchResults(results);
@@ -274,9 +280,10 @@ const Navbar = () => {
             </header>
 
             {/* --- MODAL RENDERING --- */}
-            {selectedProductId && (
+            {selectedProduct && (
                 <ProductQuickViewModal
-                    itemData={selectedProductId}
+                    // Pass the full itemData object so the modal has everything it needs
+                    itemData={selectedProduct}
                     onClose={handleCloseModal}
                 />
             )}

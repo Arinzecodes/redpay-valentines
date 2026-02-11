@@ -24,7 +24,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     shippingAddress: Yup.string().required("Shipping Address is required"),
   });
 
-  const { clearCart, cartItems } = useCart();
+  const { clearCart } = useCart();
   const router = useRouter();
   const [loading] = useState(false);
 
@@ -49,21 +49,27 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   }
 
 
-  const { mutate: CreateOrderMutation, isPending, data: orderData } = useMutation({
+  const { mutate: CreateOrderMutation, isPending } = useMutation({
     mutationFn: createOrder,
     onSuccess: (data) => {
-      showToast(data.status ? "success" : "error", data.message)
-      const ref = orderData?.data.reference
-      setReference(ref);
-      payWithRedpay(ref);
+      try {
+        const ref = data?.data?.reference;
+        if (!ref) throw new Error("Missing reference");
+
+        showToast(data.status ? "success" : "error", data.message)
+        setReference(ref);
+        payWithRedpay(ref);
+      } catch (err) {
+        console.error("Payment init failed:", err);
+      }
     },
+
     onError: (error) => {
       showToast("error", error.message || "Failed to create order", { autoClose: 3000 });
       onClose()
     }
   })
 
-  const productIds = cartItems.map(item => item.id);
 
 
   const handleCreateOrder = (values: any) => {
@@ -73,7 +79,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
       customerName: values.customerName,
       customerPhoneNumber: values.customerPhoneNumber,
       shippingAddress: values.shippingAddress,
-      productIds
     });
   };
 
@@ -135,7 +140,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
       handler.openIframe();
     } catch (err) {
       console.error(err);
-      showToast("error", "Unable to initialize payment");
     }
   };
 
@@ -168,7 +172,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
             customerName: "",
             customerPhoneNumber: "",
             shippingAddress: "",
-            productIds: productIds
           }}
           onSubmit={(values) => {
             handleCreateOrder(values)

@@ -289,42 +289,67 @@ import CustomButton from "@/components/CustomButton";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CheckoutModal from "@/components/CheckoutModal";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCart } from "@/actions/getCart";
+import { deleteFromCart } from "@/actions/deleteFromCart";
+import { showToast } from "@/utils";
 
 export default function CartPage() {
   const {
     // cartItems,
     removeFromCart,
     updateQuantity,
-    calculateTotal,
   } = useCart();
 
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false); // The Gatekeeper
   const [coupon, setCoupon] = useState<number>(10000);
+  const queryClient = useQueryClient();
+  const [quantity] = useState(1)
 
-  const total = calculateTotal();
-
-  const grandTotalWithCoupon = total + coupon;
-
-  const { data: GetCartProducts } = useQuery({
+  const { data: GetCartProducts, isPending } = useQuery({
     queryKey: ["getCartProducts"],
     queryFn: getCart,
   });
 
-  useEffect(() => {
-    if (total < 100000) {
-      setCoupon(1500);
-    } else {
-      setCoupon(10000);
-    }
-  }, [total]);
+  const calculateCart = () => {
+    return GetCartProducts?.data?.reduce((total, item) => {
+      return total + item.price * item.quantity;
+    }, 0);
+  };
+
+  const total = calculateCart();
+
+  const { mutate: DeleteCartMutation } = useMutation({
+    mutationFn: (productId: string) => deleteFromCart(productId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["getCartProducts"],
+      });
+    },
+    onError: (error: Error) => {
+      showToast("error", error.message);
+    },
+  });
+
+
+  const handleDeleteCart = (productId: string) => {
+    DeleteCartMutation(productId)
+  }
+
+  const grandTotalWithCoupon = total + coupon;
+
+
+  if (total < 100000 && coupon !== 1500) setCoupon(1500);
+  if (total >= 100000 && coupon !== 10000) setCoupon(10000);
 
   const goToShop = () => router.push("/");
 
-  console.log(GetCartProducts);
+  console.log(quantity);
+
+  if (isPending) return <div>Loading cart...</div>;
+
 
   return (
     <div className="min-h-screen bg-redpay-cream pt-10 pb-20 px-4 md:px-12 relative">
@@ -334,6 +359,7 @@ export default function CartPage() {
       <p className="text-center text-redpay-grey font-century mb-12">
         Review your items before checkout.
       </p>
+
 
       {!GetCartProducts?.data ? (
         <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
@@ -367,13 +393,13 @@ export default function CartPage() {
           <div className="lg:col-span-2 flex flex-col gap-6">
             {GetCartProducts?.data?.map((item: any) => (
               <div
-                key={`${item?.id}-${item?.size}`}
+                key={`${item?.productId}-${item?.size}`}
                 className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10"
               >
                 <div className="relative h-24 w-24 bg-gray-50 rounded-lg overflow-hidden shrink-0">
                   <Image
-                    src={item?.image}
-                    alt={item?.name}
+                    src={item?.productImage}
+                    alt={item?.productName}
                     fill
                     className="object-cover"
                   />
@@ -382,7 +408,7 @@ export default function CartPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-bold text-redpay-dark text-lg">
-                        {item?.name}
+                        {item?.productName}
                       </h3>
                       <p className="text-sm text-redpay-grey">
                         Size: {item?.size}
@@ -406,14 +432,8 @@ export default function CartPage() {
                     {/* Quantity Control */}
                     <div className="flex items-center border border-gray-300 rounded-lg">
                       <button
-                        onClick={() =>
-                          updateQuantity(
-                            item.id,
-                            item.size ?? "",
-                            Math.max(1, item.quantity - 1),
-                          )
-                        }
-                        className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
+                        onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
                       >
                         -
                       </button>
@@ -421,13 +441,7 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() =>
-                          updateQuantity(
-                            item.id,
-                            item.size ?? "",
-                            item.quantity + 1,
-                          )
-                        }
+                        onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         +
@@ -471,10 +485,6 @@ export default function CartPage() {
                   ₦{total.toLocaleString()}
                 </span>
               </div>
-              {/* <div className="flex justify-between">
-                                <span>Delivery</span>
-                                <span className="font-bold text-redpay-dark">₦{deliveryFee.toLocaleString()}</span>
-                            </div> */}
               <div className="flex justify-between">
                 <span>Discount</span>
                 <span className="font-bold text-redpay-dark">
@@ -525,8 +535,8 @@ export default function CartPage() {
               onClick={() => setShowModal(true)}
               disabled={!isTermsAccepted}
               className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${isTermsAccepted
-                  ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
             >
               Proceed to Checkout

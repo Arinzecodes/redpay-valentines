@@ -141,7 +141,7 @@ const Card = ({
                 // 2. Optimistic UI Update (Context)
                 if (itemData) {
                   addToCart({
-                    id: itemData.id,
+                    id: itemData.productId,
                     name: itemData.cardTitle,
                     price: itemData.price,
                     image: itemData.displayPics[0].pic,

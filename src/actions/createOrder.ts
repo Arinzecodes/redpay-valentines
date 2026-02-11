@@ -3,7 +3,7 @@ interface CreateOrderProps {
 	customerEmail: string;
 	shippingAddress: string;
 	customerPhoneNumber: string;
-	productIds: string[];
+	// productIds: string[];
 }
 
 export async function createOrder(values: CreateOrderProps) {
