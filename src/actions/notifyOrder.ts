@@ -13,6 +13,8 @@ export async function notifyOrder(values: NotifyOrderProps) {
 
     const endpoint = `${BASE_URL}/api/product/notify/payment`;
 
+    // jnksnfiwjakpomaf
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
