@@ -16,7 +16,7 @@ interface CartContextProps {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string, size: string) => void;
-  updateQuantity: (id: string, size: string, quantity: number) => void;
+  updateQuantity: (id: string, quantity: number, size?: string) => void;
   clearCart: () => void;
   calculateTotal: () => number;
 }
@@ -70,11 +70,16 @@ export const CartContextProvider = ({
     );
   };
 
-  const updateQuantity = (id: string, size: string, quantity: number) => {
+  const updateQuantity = (id: string, quantity: number, size?: string) => {
     setCartItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === id && item.size === size ? { ...item, quantity } : item,
-      ),
+      currentItems.map((item) => {
+        // If size is provided, match both id and size
+        if (size) {
+          return item.id === id && item.size === size ? { ...item, quantity } : item;
+        }
+        // If no size, just match id
+        return item.id === id ? { ...item, quantity } : item;
+      })
     );
   };
 
