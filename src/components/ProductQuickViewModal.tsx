@@ -3,20 +3,16 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
-// import { useCart } from "@/context/CartContextProvider";
-import { SALE_ITEMS, showToast } from "@/utils";
+import { showToast } from "@/utils";
 import { useMutation } from "@tanstack/react-query";
-import { useCart } from "@/context/CartContextProvider";
 import { addCart } from "@/actions/addCart";
 
 interface ProductQuickViewProps {
-    cardId: string;
+    itemData: any; // Now receives the object directly
     onClose: () => void;
 }
 
-const ProductQuickViewModal = ({ cardId, onClose }: ProductQuickViewProps) => {
-    const { addToCart } = useCart();
-    const item = SALE_ITEMS.find((i) => i.id === cardId);
+const ProductQuickViewModal = ({ itemData, onClose }: ProductQuickViewProps) => {
     const [quantity, setQuantity] = useState(1);
 
     const { mutate: AddToCartMutation } = useMutation({
@@ -29,34 +25,31 @@ const ProductQuickViewModal = ({ cardId, onClose }: ProductQuickViewProps) => {
             showToast("error", error.message);
             onClose();
         }
-    })
+    });
 
-    if (!item) return null;
+    if (!itemData) return null;
 
     // Calculate prices
-    const currentPrice = item.price;
-    const oldPrice = item.oldPrice;
+    const currentPrice = itemData.price;
+    const oldPrice = itemData.oldPrice;
     const discount = oldPrice ? Math.round(((oldPrice - currentPrice) / oldPrice) * 100) : 0;
 
     const handleAddToCart = () => {
         AddToCartMutation({
-            productId: "PRD-01KH3GFE0DYV",
+            productId: itemData.id,
             quantity: quantity
         });
     };
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             />
 
-            {/* Modal Container */}
             <div className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-zoom flex flex-col md:flex-row max-h-[90vh] md:max-h-[600px]">
-
-                {/* Close Button (Absolute Top Right) */}
+                {/* Close Button */}
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 z-20 p-2 bg-white/80 rounded-full hover:bg-white hover:text-redpay-red transition-all shadow-sm"
@@ -68,13 +61,12 @@ const ProductQuickViewModal = ({ cardId, onClose }: ProductQuickViewProps) => {
                 <div className="w-full md:w-1/2 bg-[#F7F7F7] flex items-center justify-center p-8 relative">
                     <div className="relative w-full h-64 md:h-full">
                         <Image
-                            src={item.displayPics[0].pic}
-                            alt={item.cardTitle}
+                            src={itemData.displayPics[0].pic}
+                            alt={itemData.cardTitle}
                             fill
                             className="object-contain"
                         />
                     </div>
-                    {/* Discount Badge */}
                     {discount > 0 && (
                         <div className="absolute top-0 left-0 bg-redpay-red text-white font-century font-bold text-lg px-4 py-2 rounded-br-2xl z-10">
                             -{discount}%
@@ -84,11 +76,9 @@ const ProductQuickViewModal = ({ cardId, onClose }: ProductQuickViewProps) => {
 
                 {/* Right: Product Details */}
                 <div className="w-full md:w-1/2 p-8 flex flex-col overflow-y-auto">
-
-                    {/* Header */}
                     <div className="mb-6">
                         <h2 className="text-3xl font-century font-bold text-redpay-dark mb-2">
-                            {item.cardTitle}
+                            {itemData.cardTitle}
                         </h2>
                         <div className="flex items-center gap-3">
                             <span className="text-2xl font-bold text-redpay-red font-century">
@@ -102,20 +92,15 @@ const ProductQuickViewModal = ({ cardId, onClose }: ProductQuickViewProps) => {
                         </div>
                     </div>
 
-                    {/* Description */}
                     <div className="mb-8 flex-grow">
                         <h3 className="text-sm font-bold text-redpay-dark uppercase tracking-wider mb-2">Description</h3>
                         <p className="text-redpay-grey font-century leading-relaxed">
-                            {item.description || "Experience the best quality with RedPay Store. This item is curated for the season of love."}
+                            {itemData.description || "Experience the best quality with RedPay Store."}
                         </p>
                     </div>
 
-                    {/* Actions */}
                     <div className="mt-auto space-y-4">
-
-                        {/* Quantity & Add to Cart Row */}
                         <div className="flex gap-4">
-                            {/* Quantity Stepper */}
                             <div className="flex items-center border border-gray-300 rounded-full h-12 px-4 gap-4">
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -128,7 +113,6 @@ const ProductQuickViewModal = ({ cardId, onClose }: ProductQuickViewProps) => {
                                 >+</button>
                             </div>
 
-                            {/* Add Button */}
                             <button
                                 onClick={handleAddToCart}
                                 className="flex-1 bg-redpay-red text-white h-12 rounded-full font-bold font-century hover:bg-red-800 transition-all shadow-lg flex items-center justify-center gap-2"
@@ -137,7 +121,6 @@ const ProductQuickViewModal = ({ cardId, onClose }: ProductQuickViewProps) => {
                                 Add to Cart
                             </button>
                         </div>
-
                         <div className="text-center">
                             <span className="text-xs text-redpay-grey">
                                 Secure checkout powered by <span className="font-bold text-redpay-dark">RedPay</span>
