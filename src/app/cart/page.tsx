@@ -8,11 +8,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CheckoutModal from "@/components/CheckoutModal";
 import Loader from "@/components/Loader";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCart } from "@/actions/getCart";
+import { deleteFromCart } from "@/actions/deleteFromCart";
+import { showToast } from "@/utils";
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, calculateTotal } =
+  const { cartItems, calculateTotal, updateQuantity } =
     useCart();
 
   const router = useRouter();
@@ -26,28 +28,42 @@ export default function CartPage() {
     queryFn: getCart,
   });
 
-  const updateQuantity = (productId: string, type: "inc" | "dec") => {
-    queryClient.setQueryData(["getCartProducts"], (oldData: any) => {
-      if (!oldData) return oldData;
+  // const updateQuantity = (productId: string, type: "inc" | "dec") => {
+  //   queryClient.setQueryData(["getCartProducts"], (oldData: any) => {
+  //     if (!oldData) return oldData;
 
-      return {
-        ...oldData,
-        data: oldData.data.map((item: any) => {
-          if (item.productId !== productId) return item;
+  //     return {
+  //       ...oldData,
+  //       data: oldData.data.map((item: any) => {
+  //         if (item.productId !== productId) return item;
 
-          if (type === "inc") {
-            return { ...item, quantity: item.quantity + 1 };
-          }
+  //         if (type === "inc") {
+  //           return { ...item, quantity: item.quantity + 1 };
+  //         }
 
-          if (type === "dec" && item.quantity > 1) {
-            return { ...item, quantity: item.quantity - 1 };
-          }
+  //         if (type === "dec" && item.quantity > 1) {
+  //           return { ...item, quantity: item.quantity - 1 };
+  //         }
 
-          return item;
-        }),
-      };
-    });
+  //         return item;
+  //       }),
+  //     };
+  //   });
+  // };
+
+  const { mutate: DeleteCartMutation } = useMutation({
+    mutationFn: deleteFromCart,
+    onSuccess: (data) => {
+      showToast(data.status ? "success" : "error", data.message)
+      // queryClient.invalidateQueries(['getCartProducts'])
+    }
+  });
+
+  const handleDeleteCart = (productId: string) => {
+    DeleteCartMutation({ productId });
   };
+
+
 
   const total = calculateTotal();
   const grandTotal = total;
@@ -67,9 +83,6 @@ export default function CartPage() {
 
   const grandTotalWithCoupon = grandTotal + totalDeliveryFee - coupon;
 
-  // const handleDeleteCart = (productId: string) => {
-  //   DeleteCartMutation(productId);
-  // };
 
   useEffect(() => {
     if (total < 100000) {
@@ -97,7 +110,7 @@ export default function CartPage() {
         Review your items before checkout.
       </p>
 
-      {GetCartProducts?.data.length === 0 ? (
+      {GetCartProducts?.data?.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
           <div className="relative">
             <Icon
@@ -127,9 +140,9 @@ export default function CartPage() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left: Items */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {GetCartProducts?.data.map((item) => (
+            {GetCartProducts.data.map((item: any) => (
               <div
-                key={`${item.id}-${item.size}`}
+                key={`${item.id}`}
                 className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-redpay-red/10"
               >
                 <div className="relative h-24 w-24 bg-gray-50 rounded-lg overflow-hidden shrink-0">
@@ -168,7 +181,13 @@ export default function CartPage() {
                     {/* Quantity Control */}
                     <div className="flex items-center border border-gray-300 rounded-lg">
                       <button
-                        onClick={() => updateQuantity(item.id, "dec")}
+                        onClick={() =>
+                          updateQuantity(
+                            item.productId,
+                            item.quantity - 1,
+                            item.productName
+                          )
+                        }
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         -
@@ -177,7 +196,13 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, "inc")}
+                        onClick={() =>
+                          updateQuantity(
+                            item.productId,
+                            item.quantity + 1,
+                            item.productName
+                          )
+                        }
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         +
@@ -186,7 +211,7 @@ export default function CartPage() {
 
                     {/* Delete */}
                     <button
-                      onClick={() => removeFromCart(item.id, item.size ?? "")}
+                      onClick={() => handleDeleteCart(item.productId)}
                       className="text-redpay-grey hover:text-redpay-red flex items-center gap-1 text-sm transition-colors"
                     >
                       <Icon icon="solar:trash-bin-trash-linear" /> Remove

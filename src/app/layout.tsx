@@ -38,6 +38,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={centuryGothic.variable} data-theme="valentine">
+      <head>
+        <script
+          async
+          src="https://redpay-sdk-js.s3.eu-west-2.amazonaws.com/omni-payment-gateway-sdk.js"
+        ></script>
+      </head>
       <body className="font-century antialiased bg-redpay-cream text-redpay-dark min-h-screen flex flex-col">
         <ThemeContextProvider>
           <CartContextProvider>
@@ -52,10 +58,10 @@ export default function RootLayout({
 
                   {/* FIX: Add the Scroll Button here */}
                   <ScrollToTopButton />
-                  <Script
+                  {/* <Script
                     src="https://redpay-sdk-js.s3.eu-west-2.amazonaws.com/omni-payment-gateway-sdk.js"
                     strategy="afterInteractive"
-                  />
+                  /> */}
                 </AnalyticsProvider>
               </ReactQueryProvider>
             </ToastProvider>
