@@ -4,18 +4,18 @@ import HeroSection from "@/components/home/HeroSection";
 import ProductSection from "@/components/home/ProductSection";
 import { mapProductToUI } from "@/utils/mapper";
 
-export const dynamic = "force-dynamic"; 
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   // 1. Fetch live data from backend for PRODUCTS ONLY
   const apiProducts = await getProducts();
-  
+
   // 2. Map backend data to your UI format
   const products = apiProducts.map(mapProductToUI);
 
   return (
     <main className="min-h-screen bg-white">
-      
+
       {/* 1. HERO SECTION: Your specific panning animation component */}
       <HeroSection />
 

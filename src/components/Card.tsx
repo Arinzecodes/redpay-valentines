@@ -7,6 +7,7 @@ import Image, { StaticImageData } from "next/image";
 import ProductQuickViewModal from "./ProductQuickViewModal";
 import { useMutation } from "@tanstack/react-query";
 import { addCart } from "@/actions/addCart";
+import { useCart } from "@/context/CartContextProvider";
 // import { useCart } from "@/context/CartContextProvider";
 
 interface CardProps {
@@ -15,11 +16,11 @@ interface CardProps {
     price: number | string;
     cardId: string;
     stock?: number;
-    itemData: any; 
+    itemData: any;
 }
 
 const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: CardProps) => {
-    // const { addToCart } = useCart();
+    const { addToCart } = useCart();
     const [showQuickView, setShowQuickView] = useState(false);
 
     // Old Price logic
@@ -31,6 +32,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
         discountPercentage = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
     }
 
+    // Server Action Mutation
     const { mutate: AddToCartMutation } = useMutation({
         mutationFn: addCart,
         onSuccess: (data) => {
@@ -42,8 +44,9 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
     });
 
     const handleQuickAdd = () => {
+        // 1. Call Backend
         AddToCartMutation({
-            productId: cardId, 
+            productId: cardId,
             quantity: 1
         });
     };
@@ -55,7 +58,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
     return (
         <>
             <div className="group relative bg-white w-full md:max-w-[295px] h-auto md:h-[420px] rounded-xl shadow-card hover:shadow-xl transition-all duration-300 flex flex-col">
-
+                
                 {/* 1. Image Section */}
                 <div
                     onClick={handleViewDetails}
@@ -81,7 +84,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                             {cardTitle}
                         </h3>
 
-                        {/* 👇 UPDATED: Showing items left if stock is less than 100 (so you can see it working) */}
+                        {/* Items Left Warning (Visible if stock < 100) */}
                         {stock < 100 && stock > 0 && (
                             <div className="flex items-center gap-1 mt-1">
                                 <Icon icon="solar:danger-circle-bold" className="text-[#D98B06] w-3 h-3 md:w-4 md:h-4" />
@@ -119,14 +122,16 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleQuickAdd();
+                                // 2. Optimistic UI Update (Context)
                                 if (itemData) {
-                                     addToCart({
+                                    addToCart({
                                         id: itemData.id,
                                         name: itemData.cardTitle,
                                         price: itemData.price,
                                         image: itemData.displayPics[0].pic,
                                         quantity: 1,
-                                        size: "Regular"
+                                        size: "Regular",
+                                        deliveryFee: itemData.deliveryFee
                                     });
                                 }
                             }}
@@ -141,7 +146,7 @@ const Card = ({ imageSource, cardTitle, price, cardId, stock = 0, itemData }: Ca
             {/* Modal */}
             {showQuickView && (
                 <ProductQuickViewModal
-                    itemData={itemData}
+                    itemData={itemData} 
                     onClose={() => setShowQuickView(false)}
                 />
             )}

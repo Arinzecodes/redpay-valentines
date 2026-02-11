@@ -33,9 +33,6 @@ const ProductSection = ({ title, subtitle, category, products }: ProductSectionP
     // 3. Determine how many to show
     const itemsToRender = showAll ? categoryItems : categoryItems.slice(0, 4);
 
-    console.log(itemsToRender);
-
-
     return (
         <section id={category} className="w-full max-w-[1240px] mx-auto px-4 md:px-8 py-10">
             {/* Header */}
@@ -54,7 +51,7 @@ const ProductSection = ({ title, subtitle, category, products }: ProductSectionP
                     itemsToRender.map((item, index) => (
                         <Card
                             // Key format preserved
-                            key={`${item.id}-${index}`} 
+                            key={`${item.id}-${index}`}
                             cardId={item.id}
                             cardTitle={item.cardTitle}
                             price={item.price}
