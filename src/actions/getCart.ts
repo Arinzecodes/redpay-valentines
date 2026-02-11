@@ -1,24 +1,48 @@
+// import { cookies } from 'next/headers';
+import Cookies from "js-cookie";
+
+// const cookieStore = cookies();
+// const cartId = cookieStore.get('CART_ID')?.value;
+
+const cartId = Cookies.get("CART_ID")?.valueOf;
+
+console.log(cartId);
+
 export async function getCart() {
-	const BASE_URL = process.env.NEXT_PUBLIC_REDPAY_STORE_BASE_URL;
-	const endpoint = `${BASE_URL}/api/product/cart/get`;
+	try {
+		const BASE_URL =
+			process.env.NEXT_PUBLIC_REDPAY_STORE_BASE_URL ||
+			"https://redpaystore.staging.redpay.africa";
 
-	const response = await fetch(endpoint, {
-		method: "GET",
-		credentials: "include",
-		headers: {
-			"Content-Type": "application/json",
-		},
-	});
+// 		const endpoint = `${BASE_URL}/api/product/cart/get`;
 
-	const data = await response.json();
+		const response = await fetch(endpoint, {
+			credentials: "include",
+			headers: {
+				Cookie: `CART_ID=${cartId}`,
+			},
+		});
 
-	console.log(data);
+// 		const data = await response.json();
+// 		if (!response.ok) {
+// 			return {
+// 				status: false,
+// 				message: data.message,
+// 				data: data.data || null,
+// 			};
+// 		}
 
-	if (!response.ok) {
-		console.log(Error);
-
-		throw new Error(data.message || `HTTP error! status: ${response.status}`);
-	}
-
-	return data;
-}
+// 		return {
+// 			status: true,
+// 			message: data.message,
+// 			data: data.data || null,
+// 		};
+// 	} catch (error) {
+// 		console.error(error);
+// 		return {
+// 			status: false,
+// 			message: "Unexpected error occurred",
+// 			data: null,
+// 		};
+// 	}
+// }

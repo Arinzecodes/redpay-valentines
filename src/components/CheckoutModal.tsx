@@ -24,7 +24,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     shippingAddress: Yup.string().required("Shipping Address is required"),
   });
 
-  const { clearCart } = useCart();
+  const { clearCart, cartItems } = useCart();
   const router = useRouter();
   const [loading] = useState(false);
 
@@ -50,7 +50,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   }
 
 
-  const { mutate: CreateOrderMutation, isPending } = useMutation({
+  const { mutate: CreateOrderMutation, isPending, data: orderData } = useMutation({
     mutationFn: createOrder,
     onSuccess: (data) => {
       try {
@@ -72,6 +72,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   })
 
+  const productIds = cartItems.map(item => item.id);
 
 
   const handleCreateOrder = (values: any) => {
@@ -149,6 +150,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
       handler.openIframe();
     } catch (err) {
       console.error(err);
+      showToast("error", "Unable to initialize payment");
     }
   };
 
@@ -181,6 +183,7 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
             customerName: "",
             customerPhoneNumber: "",
             shippingAddress: "",
+            productIds: productIds
           }}
           onSubmit={(values) => {
             handleCreateOrder(values)

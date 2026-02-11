@@ -15,26 +15,26 @@ import Script from "next/script";
 
 // Ensure this variable matches what we put in tailwind.config.ts
 const centuryGothic = localFont({
-  src: [
-    {
-      path: "./fonts/centurygothic.ttf",
-      weight: "400",
-      style: "normal",
-    },
-  ],
-  variable: "--font-century-gothic",
-  display: "swap",
+    src: [
+        {
+            path: "./fonts/centurygothic.ttf",
+            weight: "400",
+            style: "normal",
+        },
+    ],
+    variable: "--font-century-gothic",
+    display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "RedPay Valentine's Store",
-  description: "Gift Fast. Eat Together. Look Good.",
+    title: "RedPay Valentine's Store",
+    description: "Gift Fast. Eat Together. Look Good.",
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
   return (
     <html lang="en" className={centuryGothic.variable} data-theme="valentine">
@@ -60,12 +60,12 @@ export default function RootLayout({
                   {/* FIX: Add the Scroll Button here */}
                   <ScrollToTopButton />
 
-                </AnalyticsProvider>
-              </ReactQueryProvider>
-            </ToastProvider>
-          </CartContextProvider>
-        </ThemeContextProvider>
-      </body>
-    </html>
-  );
+                                </AnalyticsProvider>
+                            </ReactQueryProvider>
+                        </ToastProvider>
+                    </CartContextProvider>
+                </ThemeContextProvider>
+            </body>
+        </html>
+    );
 }
