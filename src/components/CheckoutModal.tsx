@@ -9,12 +9,12 @@ import { useMutation } from '@tanstack/react-query';
 import { createOrder } from '@/actions/createOrder';
 import * as Yup from 'yup'
 import { Form, Formik } from 'formik';
+import { notifyOrder } from '@/actions/notifyOrder';
 
 interface CheckoutModalProps {
   totalAmount: number;
   onClose: () => void;
 }
-
 
 const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
   const FormSchema = Yup.object().shape({
@@ -24,17 +24,38 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     shippingAddress: Yup.string().required("Shipping Address is required"),
   });
 
-  const { clearCart } = useCart();
+  const { clearCart, cartItems } = useCart();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   const [reference, setReference] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
 
-  const { mutate: CreateOrderMutation, isPending } = useMutation({
+  const { mutate: NotifyPaymentMutation } = useMutation({
+    mutationFn: notifyOrder,
+    onSuccess: (data) => {
+      showToast(data.status ? "success" : "error", data.message)
+    },
+    onError: (error) => {
+      showToast("error", error.message || "Failed to create order", { autoClose: 3000 });
+    }
+  })
+
+  const handleNotifyPayment = () => {
+    NotifyPaymentMutation({
+      orderReference: reference,
+      totalAmountPaid: totalAmount
+    })
+  }
+
+
+  const { mutate: CreateOrderMutation, isPending, data: orderData } = useMutation({
     mutationFn: createOrder,
     onSuccess: (data) => {
       showToast(data.status ? "success" : "error", data.message)
-      // onClose()
+      const ref = orderData?.data.reference
+      setReference(ref);
+      payWithRedpay(ref);
     },
     onError: (error) => {
       showToast("error", error.message || "Failed to create order", { autoClose: 3000 });
@@ -42,17 +63,21 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   })
 
+  const productIds = cartItems.map(item => item.id);
+
+
   const handleCreateOrder = (values: any) => {
+    setEmail(values.customerEmail)
     CreateOrderMutation({
       customerEmail: values.customerEmail,
       customerName: values.customerName,
       customerPhoneNumber: values.customerPhoneNumber,
-      shippingAddress: values.shippingAddress
-    })
-  }
+      shippingAddress: values.shippingAddress,
+      productIds
+    });
+  };
 
   // RedPay SDK Logic
-
   const verifyRedPayPayment = async (ref: string) => {
     try {
       console.log("Verifying payment for:", ref);
@@ -67,52 +92,53 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
     }
   };
 
-  console.log({ reference });
+  console.log(reference);
 
   const redPayCallback = async (response: any, ref: string) => {
     if (response.status === "success" || response.status === "completed") {
       await verifyRedPayPayment(ref);
+      handleNotifyPayment()
       return;
     }
   };
 
-  // const payWithRedpay = async () => {
-  //   if (typeof window === "undefined" || !window.RedPayPop) {
-  //     console.log("RedPay SDK not loaded yet.");
-  //     return;
-  //   }
+  const payWithRedpay = async (ref: string) => {
+    if (typeof window === "undefined" || !window.RedPayPop) {
+      showToast("error", "Payment SDK not loaded");
+      return;
+    }
 
-  //   setLoading(true);
+    try {
+      const handler = window.RedPayPop.setup({
+        key: "PK_A5B84429D5F3F20EFA9B20250319110107",
+        amount: totalAmount * 100,
+        email,
+        currency: "NGN",
+        channels: ["CARD", "USSD", "TRANSFER"],
+        reference: ref,
 
-  //   // Generate reference and store it for later verification
-  //   const ref = `REF-${Math.ceil(Math.random() * 10e10)}`;
-  //   setReference(ref);
+        onClose() {
+          console.log("Payment window closed");
+        },
 
-  //   try {
-  //     const handler = await window.RedPayPop.setup({
-  //       key: "PK_A5B84429D5F3F20EFA9B20250319110107", // Test Key
-  //       amount: totalAmount * 100, // Amount in kobo,
-  //       email,
-  //       currency: "NGN",
-  //       channels: ["CARD", "USSD", "TRANSFER"],
-  //       ref,
-  //       onClose: function () {
-  //         console.log("Window closed.");
-  //         setLoading(false);
-  //       },
-  //       callback: function (response: any) {
-  //         redPayCallback(response, ref);
-  //       },
-  //       onError: function (error: any) {
-  //         console.error("RedPay error", error);
-  //       },
-  //     });
+        callback(response: any) {
+          redPayCallback(response, ref);
 
-  //     await handler.openIframe();
-  //   } catch (err: any) {
-  //     console.error("Error initializing RedPay:", err);
-  //   }
-  // };
+        },
+
+        onError(error: any) {
+          console.error("RedPay error", error);
+          showToast("error", "Payment failed");
+        },
+      });
+
+      handler.openIframe();
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Unable to initialize payment");
+    }
+  };
+
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -136,13 +162,18 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
         </div>
 
         {/* Form */}
-        <Formik initialValues={{
-          customerEmail: "",
-          customerName: "",
-          customerPhoneNumber: "",
-          shippingAddress: "",
-        }}
-          onSubmit={handleCreateOrder}
+        <Formik
+          initialValues={{
+            customerEmail: "",
+            customerName: "",
+            customerPhoneNumber: "",
+            shippingAddress: "",
+            productIds: productIds
+          }}
+          onSubmit={(values) => {
+            handleCreateOrder(values)
+
+          }}
           validationSchema={FormSchema}
           validateOnChange
           validateOnBlur
@@ -228,9 +259,6 @@ const CheckoutModal = ({ totalAmount, onClose }: CheckoutModalProps) => {
                 </button>
                 <button
                   type='submit'
-                  // onClick={() => {
-                  //   handleCreateOrder()
-                  // }}
                   disabled={!isValid || !dirty || isPending || loading}
                   className="flex-[2] py-3 rounded-lg bg-redpay-dark text-white font-century font-bold hover:bg-black transition-all flex items-center justify-center gap-2 disabled:bg-redpay-dark/20"
                 >
