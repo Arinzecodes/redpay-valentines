@@ -56,7 +56,6 @@ export default function RootLayout({
                       {children}
                     </main>
                   </AnalyticsLayout>
-
                   {/* FIX: Add the Scroll Button here */}
                   <ScrollToTopButton />
 
