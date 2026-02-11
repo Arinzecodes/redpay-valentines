@@ -78,6 +78,8 @@ export default function CartPage() {
       setDiscount(0)
     } else if (subTotal >= 2000 && subTotal <= 30000) {
       setDiscount(1500)
+    } else if (subTotal >= 100000) {
+      setDiscount(10000)
     }
   }, [subTotal])
 
