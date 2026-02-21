@@ -1,6 +1,6 @@
 "use client";
 
-import { CartItem, useCart } from "@/context/CartContextProvider";
+import { useCart } from "@/context/CartContextProvider";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import CustomButton from "@/components/CustomButton";
@@ -14,6 +14,7 @@ import { deleteFromCart } from "@/actions/deleteFromCart";
 import { showToast } from "@/utils";
 
 export default function CartPage() {
+
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false); // The Gatekeeper
@@ -50,11 +51,11 @@ export default function CartPage() {
 
   const { mutate: DeleteCartMutation } = useMutation({
     mutationFn: deleteFromCart,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       showToast(data.status ? "success" : "error", data.message);
 
       if (data.status) {
-        queryClient.invalidateQueries({ queryKey: ["getCartProducts"] });
+        queryClient.invalidateQueries({ queryKey: ['getCartProducts', variables.productId] });
       }
     },
   });
@@ -63,35 +64,33 @@ export default function CartPage() {
     DeleteCartMutation({ productId });
   };
 
+
+
   const totalDeliveryFee = GetCartProducts?.data?.reduce(
-    (acc: number, item: CartItem) => acc + (Number(item.deliveryFee) || 0),
+    (acc, item) => acc + (Number(item.deliveryFee) || 0),
     0,
   );
 
-  const subTotal =
-    GetCartProducts?.data?.reduce(
-      (acc: number, item: CartItem) =>
-        acc + Number(item.price) * Number(item.quantity),
-      0,
-    ) ?? 0;
+  const subTotal = GetCartProducts?.data?.reduce(
+    (acc, item) => acc + Number(item.price) * Number(item.quantity),
+    0
+  ) ?? 0;
 
   useEffect(() => {
     if (subTotal < 2000) {
-      setDiscount(0);
+      setDiscount(0)
     } else if (subTotal >= 2000 && subTotal <= 30000) {
-      setDiscount(1500);
+      setDiscount(1500)
     } else if (subTotal >= 100000) {
-      setDiscount(10000);
+      setDiscount(10000)
     }
-  }, [subTotal]);
+  }, [subTotal])
 
-  const totalAmount = subTotal + totalDeliveryFee - discount;
+
+  const totalAmount = subTotal + totalDeliveryFee - discount
+
 
   const goToShop = () => router.push("/");
-
-  const quantityChange = () => {
-    console.log("clicked");
-  };
 
   if (isPending)
     return (
@@ -180,7 +179,12 @@ export default function CartPage() {
                     {/* Quantity Control */}
                     <div className="flex items-center border border-gray-300 rounded-lg">
                       <button
-                        onClick={() => updateQuantity(item.productId, "dec")}
+                        onClick={() =>
+                          updateQuantity(
+                            item.productId,
+                            "dec"
+                          )
+                        }
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         -
@@ -189,7 +193,12 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.productId, "inc")}
+                        onClick={() =>
+                          updateQuantity(
+                            item.productId,
+                            "inc"
+                          )
+                        }
                         className="px-3 py-1 hover:bg-gray-100 text-redpay-dark"
                       >
                         +
@@ -288,11 +297,10 @@ export default function CartPage() {
             <button
               onClick={() => setShowModal(true)}
               disabled={!isTermsAccepted}
-              className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${
-                isTermsAccepted
-                  ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
+              className={`w-full py-4 rounded-full font-bold text-lg transition-all duration-300 ${isTermsAccepted
+                ? "bg-redpay-red text-white hover:bg-red-800 shadow-lg hover:shadow-red-900/20"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
             >
               Proceed to Checkout
             </button>
